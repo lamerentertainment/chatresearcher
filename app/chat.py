@@ -5,6 +5,7 @@ Events emitted (JSON, one per SSE data line):
   {"type": "text",        "content": "..."}   – streamed text delta
   {"type": "tool_start",  "name": "..."}       – Claude is calling a tool
   {"type": "tool_done",   "name": "...", "preview": "..."}  – tool result summary
+  {"type": "cost",        "input_tokens": N, "output_tokens": N, "cost_usd": N}  – usage summary
   {"type": "done"}                             – conversation turn finished
   {"type": "error",       "content": "..."}   – something went wrong
 """
@@ -45,10 +46,17 @@ async def stream_chat(
 
     messages = history + [{"role": "user", "content": user_message}]
 
+    # Pricing for claude-haiku-4-5 (USD per million tokens)
+    INPUT_COST_PER_M = 1.0
+    OUTPUT_COST_PER_M = 5.0
+
+    total_input_tokens = 0
+    total_output_tokens = 0
+
     try:
         while True:
             async with client.messages.stream(
-                model="claude-opus-4-6",
+                model="claude-haiku-4-5",
                 max_tokens=4096,
                 system=SYSTEM_PROMPT,
                 tools=TOOL_DEFINITIONS,
@@ -59,6 +67,9 @@ async def stream_chat(
                     yield _sse({"type": "text", "content": text})
 
                 final = await stream.get_final_message()
+
+            total_input_tokens += final.usage.input_tokens
+            total_output_tokens += final.usage.output_tokens
 
             # Append assistant turn to history
             messages.append({"role": "assistant", "content": final.content})
@@ -72,13 +83,11 @@ async def stream_chat(
                 if block.type != "tool_use":
                     continue
 
-                yield _sse({"type": "tool_start", "name": block.name})
+                yield _sse({"type": "tool_start", "name": block.name, "input": block.input})
 
                 result_text = await execute_tool(block.name, block.input)
 
-                # Send a short preview to the UI
-                preview = result_text[:200] + "..." if len(result_text) > 200 else result_text
-                yield _sse({"type": "tool_done", "name": block.name, "preview": preview})
+                yield _sse({"type": "tool_done", "name": block.name, "result": result_text})
 
                 tool_results.append({
                     "type": "tool_result",
@@ -88,6 +97,13 @@ async def stream_chat(
 
             messages.append({"role": "user", "content": tool_results})
 
+        cost_usd = (total_input_tokens * INPUT_COST_PER_M + total_output_tokens * OUTPUT_COST_PER_M) / 1_000_000
+        yield _sse({
+            "type": "cost",
+            "input_tokens": total_input_tokens,
+            "output_tokens": total_output_tokens,
+            "cost_usd": round(cost_usd, 6),
+        })
         yield _sse({"type": "done"})
 
     except Exception as e:

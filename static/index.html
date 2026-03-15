@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat Researcher</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -46,9 +47,9 @@
       border-radius: 12px;
       line-height: 1.6;
       font-size: 14px;
-      white-space: pre-wrap;
       word-break: break-word;
     }
+    .msg.user .bubble { white-space: pre-wrap; }
     .msg.user .bubble {
       background: #1a1a2e;
       color: #fff;
@@ -60,6 +61,30 @@
       border: 1px solid #e0e0e0;
       border-bottom-left-radius: 3px;
     }
+    .msg.assistant .bubble h1,
+    .msg.assistant .bubble h2,
+    .msg.assistant .bubble h3 { margin: 10px 0 4px; font-size: 1em; font-weight: 700; }
+    .msg.assistant .bubble p { margin: 6px 0; }
+    .msg.assistant .bubble ul,
+    .msg.assistant .bubble ol { margin: 6px 0 6px 18px; }
+    .msg.assistant .bubble li { margin: 3px 0; }
+    .msg.assistant .bubble code {
+      background: #f0f0f0; border-radius: 3px;
+      padding: 1px 4px; font-size: 13px; font-family: monospace;
+    }
+    .msg.assistant .bubble pre {
+      background: #f0f0f0; border-radius: 6px;
+      padding: 10px 12px; overflow-x: auto; margin: 8px 0;
+    }
+    .msg.assistant .bubble pre code { background: none; padding: 0; }
+    .msg.assistant .bubble blockquote {
+      border-left: 3px solid #c5d8f0; margin: 6px 0;
+      padding: 2px 10px; color: #555;
+    }
+    .msg.assistant .bubble hr { border: none; border-top: 1px solid #e0e0e0; margin: 8px 0; }
+    .msg.assistant .bubble a { color: #2c5f9e; }
+
+    .tool-wrap { align-self: flex-start; max-width: 780px; width: 100%; }
 
     .tool-pill {
       display: inline-flex;
@@ -72,8 +97,46 @@
       padding: 4px 10px;
       border-radius: 20px;
       margin: 4px 0;
+      cursor: default;
+      user-select: none;
     }
-    .tool-pill.done { background: #edfbf1; border-color: #b0e5c0; color: #1e7a3e; }
+    .tool-pill.done {
+      background: #edfbf1;
+      border-color: #b0e5c0;
+      color: #1e7a3e;
+      cursor: pointer;
+    }
+    .tool-pill.done:hover { background: #d6f5e1; }
+
+    .tool-detail {
+      display: none;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin-top: 4px;
+      font-size: 12px;
+      overflow: hidden;
+    }
+    .tool-detail.open { display: block; }
+    .tool-detail-section { padding: 8px 12px; }
+    .tool-detail-section + .tool-detail-section { border-top: 1px solid #f0f0f0; }
+    .tool-detail-label { font-weight: 600; color: #555; margin-bottom: 4px; }
+    .tool-detail-body {
+      color: #333;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 300px;
+      overflow-y: auto;
+      line-height: 1.5;
+    }
+
+    .cost-badge {
+      align-self: flex-start;
+      font-size: 11px;
+      color: #888;
+      padding: 2px 8px;
+      margin-top: -8px;
+    }
     .tool-pill svg { width: 13px; height: 13px; flex-shrink: 0; }
 
     .spinner {
@@ -179,26 +242,52 @@
     return div.querySelector(".bubble");
   }
 
-  function addToolPill(name, done, preview) {
-    const icons = {
-      search_local_cases:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`,
-      search_opencaselaw:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
-    };
-    const labels = {
-      search_local_cases: "Lokale DB",
-      search_opencaselaw: "OpenCaseLaw",
-    };
+  const TOOL_ICONS = {
+    search_local_cases: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`,
+    search_opencaselaw: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+  };
+  const TOOL_LABELS = {
+    search_local_cases: "Lokale DB",
+    search_opencaselaw: "OpenCaseLaw",
+  };
+
+  function addToolWrap(name, toolInput) {
+    const wrap = document.createElement("div");
+    wrap.className = "tool-wrap";
 
     const pill = document.createElement("div");
-    pill.className = "tool-pill" + (done ? " done" : "");
-    pill.innerHTML = (icons[name] || "") +
-      `<span>${labels[name] || name}</span>` +
-      (done ? "" : `<span class="spinner"></span>`);
-    if (done && preview) pill.title = preview;
+    pill.className = "tool-pill";
+    pill.innerHTML = (TOOL_ICONS[name] || "") +
+      `<span>${TOOL_LABELS[name] || name}</span>` +
+      `<span class="spinner"></span>`;
+    wrap.appendChild(pill);
 
-    messagesEl.appendChild(pill);
+    const detail = document.createElement("div");
+    detail.className = "tool-detail";
+
+    // Query section
+    const querySection = document.createElement("div");
+    querySection.className = "tool-detail-section";
+    querySection.innerHTML = `<div class="tool-detail-label">Suchanfrage</div>` +
+      `<div class="tool-detail-body">${escHtml(JSON.stringify(toolInput, null, 2))}</div>`;
+    detail.appendChild(querySection);
+
+    // Result section (filled later)
+    const resultSection = document.createElement("div");
+    resultSection.className = "tool-detail-section";
+    resultSection.innerHTML = `<div class="tool-detail-label">Ergebnis</div>` +
+      `<div class="tool-detail-body result-body"></div>`;
+    detail.appendChild(resultSection);
+
+    wrap.appendChild(detail);
+
+    pill.addEventListener("click", () => {
+      if (pill.classList.contains("done")) detail.classList.toggle("open");
+    });
+
+    messagesEl.appendChild(wrap);
     scrollBottom();
-    return pill;
+    return { pill, detail };
   }
 
   async function sendMessage(text) {
@@ -210,8 +299,8 @@
     bubble.textContent = "";
     let assistantText = "";
 
-    // Track active tool pills (name -> pill element)
-    const activePills = {};
+    // Track active tool wraps (name -> {pill, detail})
+    const activeTools = {};
 
     try {
       const res = await fetch("/chat", {
@@ -241,20 +330,33 @@
 
           if (evt.type === "text") {
             assistantText += evt.content;
-            bubble.textContent = assistantText;
+            bubble.innerHTML = marked.parse(assistantText);
             scrollBottom();
 
           } else if (evt.type === "tool_start") {
-            const pill = addToolPill(evt.name, false);
-            activePills[evt.name] = pill;
+            const toolWrap = addToolWrap(evt.name, evt.input || {});
+            activeTools[evt.name] = toolWrap;
 
           } else if (evt.type === "tool_done") {
-            const pill = activePills[evt.name];
-            if (pill) {
-              pill.className = "tool-pill done";
-              pill.innerHTML = pill.innerHTML.replace('<span class="spinner"></span>', "");
-              if (evt.preview) pill.title = evt.preview;
+            const toolWrap = activeTools[evt.name];
+            if (toolWrap) {
+              toolWrap.pill.classList.add("done");
+              toolWrap.pill.querySelector(".spinner")?.remove();
+              const chevron = document.createElement("span");
+              chevron.textContent = " ▾";
+              toolWrap.pill.appendChild(chevron);
+              if (evt.result) {
+                toolWrap.detail.querySelector(".result-body").textContent = evt.result;
+              }
             }
+
+          } else if (evt.type === "cost") {
+            const badge = document.createElement("div");
+            badge.className = "cost-badge";
+            const cents = (evt.cost_usd * 100).toFixed(3);
+            badge.textContent = `${evt.input_tokens} in / ${evt.output_tokens} out — $${evt.cost_usd.toFixed(4)} (${cents}¢)`;
+            messagesEl.appendChild(badge);
+            scrollBottom();
 
           } else if (evt.type === "done") {
             // Append to history
@@ -262,7 +364,7 @@
             history.push({ role: "assistant", content: assistantText });
 
           } else if (evt.type === "error") {
-            bubble.textContent = "Fehler: " + evt.content;
+            bubble.innerHTML = marked.parse("**Fehler:** " + escHtml(evt.content));
           }
         }
       }
