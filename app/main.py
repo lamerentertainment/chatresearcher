@@ -1,4 +1,6 @@
+import os
 from typing import Optional
+
 from fastapi import FastAPI, Depends, Request, HTTPException
 from fastapi.responses import StreamingResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -20,6 +22,21 @@ from app.auth import (
 )
 
 app = FastAPI(title="Chat Researcher")
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    # Erlaube SharePoint und Office 365 Domains, die App in einem Iframe anzuzeigen.
+    # Kann in der .env über ALLOWED_FRAME_ANCESTORS eingeschränkt werden.
+    allowed_ancestors = os.getenv("ALLOWED_FRAME_ANCESTORS", "https://*.sharepoint.com https://*.office.com")
+    response.headers["Content-Security-Policy"] = f"frame-ancestors 'self' {allowed_ancestors}"
+    
+    # X-Frame-Options entfernen, da es sonst zu Konflikten mit frame-ancestors kommen kann
+    if "X-Frame-Options" in response.headers:
+        del response.headers["X-Frame-Options"]
+        
+    return response
+
 
 # Auth Routers
 app.include_router(
