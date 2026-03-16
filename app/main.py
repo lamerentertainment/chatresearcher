@@ -13,6 +13,7 @@ from app.database import init_db
 from app.chat import stream_chat
 from app.auth import (
     auth_backend,
+    bearer_backend,
     fastapi_users,
     UserRead,
     UserCreate,
@@ -40,7 +41,7 @@ async def add_security_headers(request: Request, call_next):
 
 # Auth Routers
 app.include_router(
-    fastapi_users.get_auth_router(auth_backend),
+    fastapi_users.get_auth_router(bearer_backend),
     prefix="/auth/jwt",
     tags=["auth"],
 )
