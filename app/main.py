@@ -83,7 +83,5 @@ def login():
 
 
 @app.get("/")
-async def root(user: Optional[User] = Depends(fastapi_users.current_user(optional=True, active=True))):
-    if user:
-        return FileResponse("static/chat.html")
-    return RedirectResponse(url="/login")
+async def root():
+    return FileResponse("static/chat.html")

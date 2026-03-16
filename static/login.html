@@ -137,6 +137,10 @@
       });
 
       if (response.ok) {
+        const data = await response.json();
+        if (data.access_token) {
+          localStorage.setItem('chatresearcher_token', data.access_token);
+        }
         window.location.href = '/';
       } else {
         errorEl.style.display = 'block';

@@ -206,6 +206,12 @@
   const inputEl    = document.getElementById("input");
   const sendBtn    = document.getElementById("send");
 
+  // Authentication Check
+  const token = localStorage.getItem('chatresearcher_token');
+  if (!token) {
+    window.location.href = '/login';
+  }
+
   // Conversation history sent with every request (stateless backend)
   let history = [];
 
@@ -305,9 +311,20 @@
     try {
       const res = await fetch("/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json" 
+        },
         body: JSON.stringify({ messages: history, message: text }),
       });
+
+      if (res.status === 401) {
+        localStorage.removeItem('chatresearcher_token');
+        window.location.href = '/login';
+        return;
+      }
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -370,6 +387,7 @@
       }
     } catch (err) {
       bubble.textContent = "Verbindungsfehler: " + err.message;
+      if (err.message.includes("401")) window.location.href = '/login';
     }
 
     sendBtn.disabled = false;

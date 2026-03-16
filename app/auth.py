@@ -7,6 +7,7 @@ from fastapi_users.authentication import (
     AuthenticationBackend,
     CookieTransport,
     JWTStrategy,
+    BearerTransport,
 )
 from fastapi_users.db import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -41,10 +42,17 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
 async def get_user_manager(user_db=Depends(get_user_db)):
     yield UserManager(user_db)
 
-cookie_transport = CookieTransport(cookie_name="chatresearcher_auth", cookie_max_age=3600)
+cookie_transport = CookieTransport(
+    cookie_name="chatresearcher_auth",
+    cookie_max_age=3600,
+    cookie_samesite="none",
+    cookie_secure=True
+)
 
 def get_jwt_strategy() -> JWTStrategy:
     return JWTStrategy(secret=SECRET, lifetime_seconds=3600)
+
+bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
 
 auth_backend = AuthenticationBackend(
     name="jwt",
@@ -52,9 +60,15 @@ auth_backend = AuthenticationBackend(
     get_strategy=get_jwt_strategy,
 )
 
+bearer_backend = AuthenticationBackend(
+    name="jwt-bearer",
+    transport=bearer_transport,
+    get_strategy=get_jwt_strategy,
+)
+
 fastapi_users = FastAPIUsers[User, int](
     get_user_manager,
-    [auth_backend],
+    [auth_backend, bearer_backend],
 )
 
 current_active_user = fastapi_users.current_user(active=True)
