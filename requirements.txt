@@ -3,3 +3,7 @@ fastapi
 uvicorn[standard]
 python-dotenv
 mcp
+fastapi-users[sqlalchemy]
+aiosqlite
+bcrypt
+

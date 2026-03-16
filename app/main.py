@@ -1,5 +1,6 @@
-from fastapi import FastAPI
-from fastapi.responses import StreamingResponse, FileResponse
+from typing import Optional
+from fastapi import FastAPI, Depends, Request, HTTPException
+from fastapi.responses import StreamingResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -8,15 +9,38 @@ load_dotenv()
 
 from app.database import init_db
 from app.chat import stream_chat
+from app.auth import (
+    auth_backend,
+    fastapi_users,
+    UserRead,
+    UserCreate,
+    create_db_and_tables,
+    current_active_user,
+    User
+)
 
 app = FastAPI(title="Chat Researcher")
+
+# Auth Routers
+app.include_router(
+    fastapi_users.get_auth_router(auth_backend),
+    prefix="/auth/jwt",
+    tags=["auth"],
+)
+# registration disabled for security after first user created
+# app.include_router(
+#     fastapi_users.get_register_router(UserRead, UserCreate),
+#     prefix="/auth",
+#     tags=["auth"],
+# )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.on_event("startup")
-def startup():
+async def startup():
     init_db()
+    await create_db_and_tables()
 
 
 class ChatRequest(BaseModel):
@@ -25,7 +49,7 @@ class ChatRequest(BaseModel):
 
 
 @app.post("/chat")
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest, user: User = Depends(current_active_user)):
     return StreamingResponse(
         stream_chat(request.messages, request.message),
         media_type="text/event-stream",
@@ -36,6 +60,13 @@ async def chat(request: ChatRequest):
     )
 
 
+@app.get("/login")
+def login():
+    return FileResponse("static/login.html")
+
+
 @app.get("/")
-def root():
-    return FileResponse("static/index.html")
+async def root(user: Optional[User] = Depends(fastapi_users.current_user(optional=True, active=True))):
+    if user:
+        return FileResponse("static/index.html")
+    return RedirectResponse(url="/login")
