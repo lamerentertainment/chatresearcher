@@ -44,12 +44,12 @@ app.include_router(
     prefix="/auth/jwt",
     tags=["auth"],
 )
-# registration disabled for security after first user created
-# app.include_router(
-#     fastapi_users.get_register_router(UserRead, UserCreate),
-#     prefix="/auth",
-#     tags=["auth"],
-# )
+# registration enabled to create first user
+app.include_router(
+    fastapi_users.get_register_router(UserRead, UserCreate),
+    prefix="/auth",
+    tags=["auth"],
+)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -85,5 +85,5 @@ def login():
 @app.get("/")
 async def root(user: Optional[User] = Depends(fastapi_users.current_user(optional=True, active=True))):
     if user:
-        return FileResponse("static/index.html")
+        return FileResponse("static/chat.html")
     return RedirectResponse(url="/login")

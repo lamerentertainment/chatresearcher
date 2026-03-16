@@ -83,11 +83,45 @@
     </div>
     <button type="submit">Einloggen</button>
     <div id="error-msg" class="error">Anmeldung fehlgeschlagen. Bitte prüfe deine Zugangsdaten.</div>
+    <div style="text-align: center; margin-top: 15px; font-size: 13px;">
+      <a href="#" id="show-register" style="color: #2c5f9e; text-decoration: none;">Noch keinen Account? Registrieren</a>
+    </div>
+  </form>
+
+  <form id="register-form" style="display: none;">
+    <div class="form-group">
+      <label for="reg-username">Email</label>
+      <input type="email" id="reg-username" name="email" required>
+    </div>
+    <div class="form-group">
+      <label for="reg-password">Passwort (min. 8 Zeichen)</label>
+      <input type="password" id="reg-password" name="password" required>
+    </div>
+    <button type="submit">Registrieren</button>
+    <div id="reg-error-msg" class="error">Registrierung fehlgeschlagen.</div>
+    <div style="text-align: center; margin-top: 15px; font-size: 13px;">
+      <a href="#" id="show-login" style="color: #2c5f9e; text-decoration: none;">Zurück zum Login</a>
+    </div>
   </form>
 </div>
 
 <script>
-  document.getElementById('login-form').addEventListener('submit', async (e) => {
+  const loginForm = document.getElementById('login-form');
+  const registerForm = document.getElementById('register-form');
+
+  document.getElementById('show-register').addEventListener('click', (e) => {
+    e.preventDefault();
+    loginForm.style.display = 'none';
+    registerForm.style.display = 'block';
+  });
+
+  document.getElementById('show-login').addEventListener('click', (e) => {
+    e.preventDefault();
+    registerForm.style.display = 'none';
+    loginForm.style.display = 'block';
+  });
+
+  loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const errorEl = document.getElementById('error-msg');
     errorEl.style.display = 'none';
@@ -109,6 +143,38 @@
       }
     } catch (err) {
       errorEl.textContent = 'Verbindungsfehler. Bitte versuche es später erneut.';
+      errorEl.style.display = 'block';
+    }
+  });
+
+  registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorEl = document.getElementById('reg-error-msg');
+    errorEl.style.display = 'none';
+
+    const data = {
+      email: document.getElementById('reg-username').value,
+      password: document.getElementById('reg-password').value
+    };
+
+    try {
+      const response = await fetch('/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        alert('Registrierung erfolgreich! Du kannst dich jetzt einloggen.');
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+      } else {
+        const errData = await response.json();
+        errorEl.textContent = 'Fehler: ' + (errData.detail || 'Registrierung fehlgeschlagen.');
+        errorEl.style.display = 'block';
+      }
+    } catch (err) {
+      errorEl.textContent = 'Verbindungsfehler.';
       errorEl.style.display = 'block';
     }
   });
