@@ -126,15 +126,26 @@
     const errorEl = document.getElementById('error-msg');
     errorEl.style.display = 'none';
 
-    const formData = new FormData();
-    formData.append('username', document.getElementById('username').value);
-    formData.append('password', document.getElementById('password').value);
+    const params = new URLSearchParams();
+    params.append('username', document.getElementById('username').value);
+    params.append('password', document.getElementById('password').value);
 
     try {
+      console.log('Versuche Cookie-Login...');
+      const cookieRes = await fetch('/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params
+      });
+      console.log('Cookie-Login Status:', cookieRes.status);
+
+      console.log('Versuche JWT-Login...');
       const response = await fetch('/auth/jwt/login', {
         method: 'POST',
-        body: formData
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params
       });
+      console.log('JWT-Login Status:', response.status);
 
       if (response.ok) {
         const data = await response.json();

@@ -128,7 +128,12 @@ async def stream_chat(
             "output_tokens": total_output_tokens,
             "cost_usd": round(cost_usd, 6),
         })
-        yield _sse({"type": "done"})
+        yield _sse({
+            "type": "done",
+            "tokens_input": total_input_tokens,
+            "tokens_output": total_output_tokens,
+            "cost_usd": cost_usd
+        })
 
     except Exception as e:
         yield _sse({"type": "error", "content": str(e)})

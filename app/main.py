@@ -1,7 +1,8 @@
 import os
+import json
 from typing import Optional
 
-from fastapi import FastAPI, Depends, Request, HTTPException
+from fastapi import FastAPI, Depends, Request, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -19,8 +20,13 @@ from app.auth import (
     UserCreate,
     create_db_and_tables,
     current_active_user,
-    User
+    User,
+    UserRead,
+    UserRequest,
+    get_async_session
 )
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 app = FastAPI(title="Chat Researcher")
 
@@ -45,12 +51,56 @@ app.include_router(
     prefix="/auth/jwt",
     tags=["auth"],
 )
+# Cookie-based auth for browser access
+app.include_router(
+    fastapi_users.get_auth_router(auth_backend),
+    prefix="/auth",
+    tags=["auth"],
+)
 # registration enabled to create first user
 app.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),
     prefix="/auth",
     tags=["auth"],
 )
+
+@app.get("/debug/me")
+async def debug_me(request: Request):
+    user = None
+    try:
+        user = await current_active_user(request)
+    except:
+        pass
+    
+    return {
+        "user": {
+            "email": user.email,
+            "is_superuser": user.is_superuser,
+            "is_active": user.is_active
+        } if user else None,
+        "headers": dict(request.headers),
+        "cookies": request.cookies
+    }
+
+# Admin Routes
+@app.get("/admin/users", tags=["admin"])
+async def list_users(
+    user: User = Depends(fastapi_users.current_user(active=True, superuser=True)),
+    session: AsyncSession = Depends(get_async_session)
+):
+    result = await session.execute(select(User))
+    return result.scalars().all()
+
+@app.get("/admin/requests", tags=["admin"])
+async def list_requests(
+    user: User = Depends(fastapi_users.current_user(active=True, superuser=True)),
+    session: AsyncSession = Depends(get_async_session)
+):
+    result = await session.execute(select(UserRequest).order_by(UserRequest.timestamp.desc()).limit(100))
+    return result.scalars().all()
+
+async def log_user_request(user_id: int, query: str, metrics_gen):
+    pass # Replaced by save_request_to_db and wrapped_stream
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -67,9 +117,42 @@ class ChatRequest(BaseModel):
 
 
 @app.post("/chat")
-async def chat(request: ChatRequest, user: User = Depends(current_active_user)):
+async def chat(
+    request: ChatRequest, 
+    background_tasks: BackgroundTasks,
+    user: User = Depends(current_active_user)
+):
+    async def wrapped_stream():
+        tokens_input = 0
+        tokens_output = 0
+        cost_usd = 0.0
+        
+        async for chunk in stream_chat(request.messages, request.message):
+            yield chunk
+            
+            # Extract metrics from the 'done' event
+            if chunk.startswith("data: "):
+                try:
+                    data = json.loads(chunk[6:])
+                    if data.get("type") == "done":
+                        tokens_input = data.get("tokens_input", 0)
+                        tokens_output = data.get("tokens_output", 0)
+                        cost_usd = data.get("cost_usd", 0.0)
+                except:
+                    pass
+        
+        # Log to database after the stream is finished
+        background_tasks.add_task(
+            save_request_to_db,
+            user_id=user.id,
+            query=request.message,
+            tokens_input=tokens_input,
+            tokens_output=tokens_output,
+            cost_usd=cost_usd
+        )
+
     return StreamingResponse(
-        stream_chat(request.messages, request.message),
+        wrapped_stream(),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -77,6 +160,25 @@ async def chat(request: ChatRequest, user: User = Depends(current_active_user)):
         },
     )
 
+async def save_request_to_db(user_id: int, query: str, tokens_input: int, tokens_output: int, cost_usd: float):
+    from app.auth import async_session_maker
+    async with async_session_maker() as session:
+        new_request = UserRequest(
+            user_id=user_id,
+            query=query,
+            tokens_input=tokens_input,
+            tokens_output=tokens_output,
+            cost_usd=cost_usd
+        )
+        session.add(new_request)
+        await session.commit()
+
+
+@app.get("/logout")
+async def logout():
+    response = RedirectResponse(url="/login")
+    response.delete_cookie("chatresearcher_auth")
+    return response
 
 @app.get("/login")
 def login():
