@@ -151,9 +151,9 @@ async def current_active_user_simplified(
         return await get_sharepoint_user(session)
 
     # 2. Check for admin session cookie
-    auth_token = request.cookies.get("admin_auth")
+    auth_token = request.cookies.get("__session")
     # Debug logging
-    print(f"DEBUG: Cookie 'admin_auth' found: {auth_token is not None}")
+    print(f"DEBUG: Cookie '__session' found: {auth_token is not None}")
     if auth_token:
         print(f"DEBUG: Cookie value length: {len(auth_token)}")
     

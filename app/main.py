@@ -183,7 +183,7 @@ async def save_request_to_db(user_id: int, query: str, tokens_input: int, tokens
 @app.get("/logout")
 async def logout():
     response = RedirectResponse(url="/login")
-    response.delete_cookie("admin_auth")
+    response.delete_cookie("__session")
     response.delete_cookie("chatresearcher_auth")
     return response
 
@@ -194,10 +194,10 @@ def login():
 @app.post("/login")
 async def login_post(password: str = Form(...)):
     if password.strip() == ADMIN_PASSWORD:
-        print(f"DEBUG: Login successful. Setting cookie 'admin_auth'.")
+        print(f"DEBUG: Login successful. Setting cookie '__session'.")
         response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
         response.set_cookie(
-            key="admin_auth", 
+            key="__session", 
             value=ADMIN_PASSWORD, 
             path="/",
             httponly=True, 
