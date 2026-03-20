@@ -212,7 +212,33 @@ async def login_post(password: str = Form(...)):
 @app.get("/")
 async def root(request: Request, session: AsyncSession = Depends(get_async_session)):
     try:
-        await current_active_user_simplified(request, session)
-        return FileResponse("static/chat.html")
+        user = await current_active_user_simplified(request, session)
+        response = FileResponse("static/chat.html")
+        
+        # If authorized via referer (SharePoint), ensure we set the session cookie
+        # so subsequent fetch calls (which might lose the referer) work.
+        referer = request.headers.get("referer", "")
+        origin = request.headers.get("origin", "")
+        
+        from app.auth import ALLOWED_DOMAINS
+        is_sharepoint = False
+        for domain in ALLOWED_DOMAINS.split():
+            clean_domain = domain.replace("https://", "").replace("http://", "").replace("*.", "")
+            if clean_domain and (clean_domain in referer or clean_domain in origin):
+                is_sharepoint = True
+                break
+        
+        if is_sharepoint:
+            # Only set if not already authenticated as admin
+            if not (user and user.is_superuser):
+                response.set_cookie(
+                    key="__session",
+                    value="sharepoint-access",
+                    path="/",
+                    httponly=True,
+                    samesite="lax",
+                    secure=SECURE_COOKIES
+                )
+        return response
     except HTTPException:
         return RedirectResponse(url="/login")

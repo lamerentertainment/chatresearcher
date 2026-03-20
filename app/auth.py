@@ -160,6 +160,9 @@ async def current_active_user_simplified(
     if auth_token and auth_token.strip() == ADMIN_PASSWORD:
         return await get_admin_user(session)
 
+    if auth_token and auth_token.strip() == "sharepoint-access":
+        return await get_sharepoint_user(session)
+
     # 3. Fallback: If not authenticated, raise error or redirect (handled in main.py)
     print(f"DEBUG: Auth failed for {request.url.path}")
     raise HTTPException(
