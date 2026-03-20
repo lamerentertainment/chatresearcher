@@ -134,6 +134,10 @@ async def get_admin_user(session: AsyncSession):
         user = User(email=email, hashed_password="!", is_active=True, is_verified=True, is_superuser=True)
         session.add(user)
         await session.commit()
+    elif not user.is_superuser:
+        user.is_superuser = True
+        session.add(user)
+        await session.commit()
     return user
 
 async def current_active_user_simplified(
@@ -154,8 +158,10 @@ async def current_active_user_simplified(
         try:
             user = await strategy.read_token(token, user_manager)
             if user and user.is_active:
+                print(f"DEBUG: Authenticated via token. User: {user.email}, Superuser: {user.is_superuser}")
                 return user
-        except:
+        except Exception as e:
+            print(f"DEBUG: Token auth failed: {e}")
             pass
 
     # 2. Check for admin session cookie
@@ -166,25 +172,33 @@ async def current_active_user_simplified(
         print(f"DEBUG: Cookie value length: {len(auth_token)}")
     
     if auth_token and auth_token.strip() == ADMIN_PASSWORD:
-        return await get_admin_user(session)
+        admin_user = await get_admin_user(session)
+        print(f"DEBUG: Authenticated via admin cookie. User: {admin_user.email}, Superuser: {admin_user.is_superuser}")
+        return admin_user
 
     if auth_token and auth_token.strip() == "sharepoint-access":
-        return await get_sharepoint_user(session)
+        sp_user = await get_sharepoint_user(session)
+        print(f"DEBUG: Authenticated via sharepoint-access cookie. User: {sp_user.email}, Superuser: {sp_user.is_superuser}")
+        return sp_user
 
     # 3. Check if the request comes from SharePoint (Referer based)
-    referer = request.headers.get("referer", "")
-    origin = request.headers.get("origin", "")
-    
-    # Simple check: if allowed domain is in referer or origin
-    is_from_allowed_domain = False
-    for domain in ALLOWED_DOMAINS.split():
-        clean_domain = domain.replace("https://", "").replace("http://", "").replace("*.", "")
-        if clean_domain and (clean_domain in referer or clean_domain in origin):
-            is_from_allowed_domain = True
-            break
-            
-    if is_from_allowed_domain:
-        return await get_sharepoint_user(session)
+    # BUT: Only for non-admin routes. Admin routes must use explicit auth.
+    if not request.url.path.startswith("/admin"):
+        referer = request.headers.get("referer", "")
+        origin = request.headers.get("origin", "")
+        
+        # Simple check: if allowed domain is in referer or origin
+        is_from_allowed_domain = False
+        for domain in ALLOWED_DOMAINS.split():
+            clean_domain = domain.replace("https://", "").replace("http://", "").replace("*.", "")
+            if clean_domain and (clean_domain in referer or clean_domain in origin):
+                is_from_allowed_domain = True
+                break
+                
+        if is_from_allowed_domain:
+            sp_user = await get_sharepoint_user(session)
+            print(f"DEBUG: Authenticated via domain match ({referer or origin}). User: {sp_user.email}, Superuser: {sp_user.is_superuser}")
+            return sp_user
 
     # 3. Fallback: If not authenticated, raise error or redirect (handled in main.py)
     print(f"DEBUG: Auth failed for {request.url.path}")

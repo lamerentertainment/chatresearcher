@@ -104,6 +104,7 @@ async def list_requests(
     user: User = Depends(current_active_user_simplified),
     session: AsyncSession = Depends(get_async_session)
 ):
+    print(f"DEBUG: list_requests accessed by user: {getattr(user, 'email', 'unknown')}, is_superuser: {getattr(user, 'is_superuser', False)}")
     if not user.is_superuser:
         raise HTTPException(status_code=403, detail="Forbidden")
     
