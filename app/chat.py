@@ -78,7 +78,9 @@ async def stream_chat(
     total_output_tokens = 0
 
     try:
+        turn_count = 0
         while True:
+            turn_count += 1
             async with client.messages.stream(
                 model="claude-haiku-4-5",
                 max_tokens=4096,
@@ -87,7 +89,11 @@ async def stream_chat(
                 messages=messages,
             ) as stream:
                 # Stream text deltas to the client
+                first_delta_in_turn = True
                 async for text in stream.text_stream:
+                    if turn_count > 1 and first_delta_in_turn:
+                        yield _sse({"type": "text", "content": "\n\n"})
+                        first_delta_in_turn = False
                     yield _sse({"type": "text", "content": text})
 
                 final = await stream.get_final_message()
