@@ -70,20 +70,56 @@
 
 <div class="login-card">
   <h1>Chat Researcher Login</h1>
-  <form action="/login" method="POST">
+  <form id="login-form">
     <div class="form-group">
       <label for="password">Admin Passwort</label>
       <input type="password" id="password" name="password" required autofocus>
     </div>
-    <button type="submit">Einloggen</button>
+    <button type="submit" id="submit-btn">Einloggen</button>
   </form>
   <div id="error-msg" class="error" style="display: none;">Falsches Passwort.</div>
 </div>
 
 <script>
-  if (window.location.search.includes('error=1')) {
-    document.getElementById('error-msg').style.display = 'block';
-  }
+  const form = document.getElementById('login-form');
+  const errorMsg = document.getElementById('error-msg');
+  const submitBtn = document.getElementById('submit-btn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorMsg.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Lädt...';
+
+    const formData = new FormData(form);
+    
+    try {
+      const response = await fetch('/login', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.token) {
+          localStorage.setItem('chatresearcher_token', data.token);
+          // Append token to URL so root page can authenticate without cookies
+          window.location.href = '/?token=' + data.token;
+        } else {
+          throw new Error('No token received');
+        }
+      } else {
+        errorMsg.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Einloggen';
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      errorMsg.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Einloggen';
+    }
+  });
 </script>
 
 </body>

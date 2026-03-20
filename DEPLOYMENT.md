@@ -40,16 +40,52 @@ gcloud run deploy chat-researcher \
     --allow-unauthenticated
 ```
 
-### Wichtig: Umgebungsvariablen setzen
-Die `.env` Datei wird aus Sicherheitsgründen **nicht** hochgeladen. Du musst die Variablen direkt in Cloud Run hinterlegen:
+### Umgebungsvariablen & Secrets
 
-1.  Öffne die [Cloud Run Konsole](https://console.cloud.google.com/run).
-2.  Wähle `chat-researcher` aus.
-3.  Klicke auf **"Neue Revision bearbeiten"**.
-4.  Füge unter **"Variablen & Geheimnisse"** mindestens folgende hinzu:
-    *   `ANTHROPIC_API_KEY`: Dein API Schlüssel von Anthropic.
-    *   `JWT_SECRET`: Ein langer, zufälliger String für die Session-Sicherheit.
-    *   `ALLOWED_FRAME_ANCESTORS`: Deine SharePoint URL (z.B. `https://tenant.sharepoint.com`).
+Die App benötigt folgende Variablen in Cloud Run (unter **Variablen & Geheimnisse**):
+
+| Variable | Beschreibung | Empfehlung |
+| :--- | :--- | :--- |
+| `ANTHROPIC_API_KEY` | Dein Anthropic API Key | Als **Secret** einbinden |
+| `ADMIN_PASSWORD` | Das Passwort für den Admin-Login | Als **Secret** einbinden |
+| `JWT_SECRET` | Ein langer Zufallsstring für Session-Sicherung | Als **Secret** einbinden |
+| `ALLOWED_FRAME_ANCESTORS` | `https://luch0.sharepoint.com` | Als **Variable** setzen |
+| `SECURE_COOKIES` | `true` (für HTTPS/Produktion) | Als **Variable** setzen |
+
+#### Einrichten über das Google Cloud Terminal:
+
+```bash
+# 1. Secrets erstellen (falls noch nicht vorhanden)
+gcloud secrets create ANTHROPIC_API_KEY --replication-policy="automatic"
+gcloud secrets create ADMIN_PASSWORD --replication-policy="automatic"
+gcloud secrets create JWT_SECRET --replication-policy="automatic"
+
+# 2. Werte hinzufügen (Warten auf Eingabe)
+echo -n "DEIN_KEY" | gcloud secrets versions add ANTHROPIC_API_KEY --data-file=-
+echo -n "DEIN_PASSWORT" | gcloud secrets versions add ADMIN_PASSWORD --data-file=-
+echo -n "MEIN_GEHEIMER_STRING" | gcloud secrets versions add JWT_SECRET --data-file=-
+
+# 3. Cloud Run Dienst aktualisieren, um Secrets zu nutzen
+gcloud run services update chat-researcher \
+  --set-secrets="ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,ADMIN_PASSWORD=ADMIN_PASSWORD:latest,JWT_SECRET=JWT_SECRET:latest" \
+  --set-env-vars="SECURE_COOKIES=true,ALLOWED_FRAME_ANCESTORS=https://luch0.sharepoint.com" \
+  --region europe-west3
+```
+
+#### Einrichten über die Google Cloud Console:
+
+1.  Gehe zu **Security > Secret Manager**.
+2.  Erstelle die Secrets `ANTHROPIC_API_KEY`, `ADMIN_PASSWORD` und `JWT_SECRET` und füge deine Werte als Versionen hinzu.
+3.  Gehe zu deinem **Cloud Run Service > EDIT & DEPLOY NEW REVISION**.
+4.  Unter **Variables & Secrets** > Tab **Secrets**:
+    - Klicke auf "Add Secret Reference".
+    - Wähle das Secret aus (z.B. `ADMIN_PASSWORD`).
+    - Wähle "Reference as environment variable".
+    - Gib den Namen der Umgebungsvariable ein (muss exakt `ADMIN_PASSWORD` sein).
+5.  Unter Tab **Variables**:
+    - Füge `SECURE_COOKIES` mit dem Wert `true` hinzu.
+    - Füge `ALLOWED_FRAME_ANCESTORS` mit deiner SharePoint URL hinzu.
+6.  Klicke auf **Deploy**.
 
 ## 4. Frontend Deployment (Firebase Hosting)
 

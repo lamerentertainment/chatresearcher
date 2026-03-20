@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Researcher - Admin Requests</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --white: #ffffff;
+            --hover-color: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            width: 300px;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .card {
+            background-color: var(--white);
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            padding: 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 1rem;
+            font-size: 0.875rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: var(--hover-color);
+        }
+
+        .timestamp {
+            color: #64748b;
+            white-space: nowrap;
+        }
+
+        .query {
+            max-width: 400px;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .metrics {
+            white-space: nowrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-tokens {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-cost {
+            background-color: #fef9c3;
+            color: #854d0e;
+        }
+
+        .loading {
+            padding: 2rem;
+            text-align: center;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Admin Dashboard - Letzte Anfragen</h1>
+            <div class="controls">
+                <input type="text" id="searchInput" placeholder="Anfragen durchsuchen..." onkeyup="filterTable()">
+                <button onclick="fetchData()">Aktualisieren</button>
+            </div>
+        </header>
+
+        <div class="card">
+            <table id="requestsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Zeitstempel</th>
+                        <th>User ID</th>
+                        <th>Anfrage</th>
+                        <th>Tokens (In/Out)</th>
+                        <th>Kosten (USD)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="6" class="loading">Daten werden geladen...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let allData = [];
+
+        async function fetchData() {
+            const tableBody = document.getElementById('tableBody');
+            try {
+                const response = await fetch('/admin/requests?json=true');
+                if (!response.ok) throw new Error('Fehler beim Laden der Daten');
+                
+                allData = await response.json();
+                renderTable(allData);
+            } catch (error) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="loading" style="color: #ef4444;">${error.message}</td></tr>`;
+            }
+        }
+
+        function renderTable(data) {
+            const tableBody = document.getElementById('tableBody');
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="loading">Keine Anfragen gefunden.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = data.map(req => `
+                <tr>
+                    <td>${req.id}</td>
+                    <td class="timestamp">${new Date(req.timestamp).toLocaleString('de-DE')}</td>
+                    <td>${req.user_id}</td>
+                    <td class="query">${escapeHtml(req.query)}</td>
+                    <td class="metrics">
+                        <span class="badge badge-tokens">${req.tokens_input} / ${req.tokens_output}</span>
+                    </td>
+                    <td class="metrics">
+                        <span class="badge badge-cost">$${req.cost_usd.toFixed(4)}</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterTable() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const filteredData = allData.filter(req => 
+                req.query.toLowerCase().includes(filter) || 
+                req.id.toString().includes(filter) ||
+                req.user_id.toString().includes(filter)
+            );
+            renderTable(filteredData);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initial fetch
+        fetchData();
+    </script>
+</body>
+</html>

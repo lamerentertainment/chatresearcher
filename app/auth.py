@@ -95,6 +95,11 @@ fastapi_users = FastAPIUsers[User, int](
 
 current_active_user = fastapi_users.current_user(active=True)
 
+async def generate_token_for_user(user: User) -> str:
+    strategy = JWTStrategy(secret=SECRET, lifetime_seconds=3600, token_audience="fastapi-users:jwt-bearer")
+    # The audience must match the bearer backend name for chat to work
+    return await strategy.write_token(user)
+
 # Schema definitions
 class UserRead(schemas.BaseUser[int]):
     pass
@@ -133,9 +138,27 @@ async def get_admin_user(session: AsyncSession):
 
 async def current_active_user_simplified(
     request: Request,
-    session: AsyncSession = Depends(get_async_session)
+    session: AsyncSession = Depends(get_async_session),
+    user_manager: UserManager = Depends(get_user_manager)
 ) -> User:
-    # 1. Check if the request comes from SharePoint
+    # 1. Check for token (Priority: Query Param > Authorization Header)
+    # Query param is used for the initial page load in iframes after login.
+    token = request.query_params.get("token")
+    if not token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.replace("Bearer ", "")
+    
+    if token:
+        strategy = JWTStrategy(secret=SECRET, lifetime_seconds=3600, token_audience="fastapi-users:jwt-bearer")
+        try:
+            user = await strategy.read_token(token, user_manager)
+            if user and user.is_active:
+                return user
+        except:
+            pass
+
+    # 2. Check if the request comes from SharePoint (Referer based)
     referer = request.headers.get("referer", "")
     origin = request.headers.get("origin", "")
     

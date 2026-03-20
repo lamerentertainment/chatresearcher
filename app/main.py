@@ -3,7 +3,7 @@ import json
 from typing import Optional
 
 from fastapi import FastAPI, Depends, Request, HTTPException, BackgroundTasks, Form, status
-from fastapi.responses import StreamingResponse, FileResponse, RedirectResponse
+from fastapi.responses import StreamingResponse, FileResponse, RedirectResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -25,7 +25,9 @@ from app.auth import (
     get_async_session,
     SECURE_COOKIES,
     ADMIN_PASSWORD,
-    User
+    User,
+    generate_token_for_user,
+    get_admin_user
 )
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -97,13 +99,19 @@ async def list_users(
 
 @app.get("/admin/requests", tags=["admin"])
 async def list_requests(
+    request: Request,
+    json: bool = False,
     user: User = Depends(current_active_user_simplified),
     session: AsyncSession = Depends(get_async_session)
 ):
     if not user.is_superuser:
         raise HTTPException(status_code=403, detail="Forbidden")
-    result = await session.execute(select(UserRequest).order_by(UserRequest.timestamp.desc()).limit(100))
-    return result.scalars().all()
+    
+    if json:
+        result = await session.execute(select(UserRequest).order_by(UserRequest.timestamp.desc()).limit(100))
+        return result.scalars().all()
+    
+    return FileResponse("static/admin_requests.html")
 
 async def log_user_request(user_id: int, query: str, metrics_gen):
     pass # Replaced by save_request_to_db and wrapped_stream
@@ -192,10 +200,12 @@ def login():
     return FileResponse("static/login.html")
 
 @app.post("/login")
-async def login_post(password: str = Form(...)):
+async def login_post(password: str = Form(...), session: AsyncSession = Depends(get_async_session)):
     if password.strip() == ADMIN_PASSWORD:
-        print(f"DEBUG: Login successful. Setting cookie '__session'.")
-        response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+        admin_user = await get_admin_user(session)
+        token = await generate_token_for_user(admin_user)
+        print(f"DEBUG: Login successful. Setting cookie '__session' and returning token.")
+        response = JSONResponse({"token": token})
         response.set_cookie(
             key="__session", 
             value=ADMIN_PASSWORD, 
@@ -205,15 +215,27 @@ async def login_post(password: str = Form(...)):
             secure=SECURE_COOKIES
         )
         return response
-    print(f"DEBUG: Login failed. Provided password: {password[:1]}***")
-    return RedirectResponse(url="/login?error=1", status_code=status.HTTP_303_SEE_OTHER)
+    
+    print(f"DEBUG: Login failed.")
+    raise HTTPException(status_code=401, detail="Falsches Passwort")
 
 
 @app.get("/")
 async def root(request: Request, session: AsyncSession = Depends(get_async_session)):
     try:
         user = await current_active_user_simplified(request, session)
-        response = FileResponse("static/chat.html")
+        token_for_client = await generate_token_for_user(user)
+        
+        # Generate HTML with injected token
+        with open("static/chat.html", "r") as f:
+            html_content = f.read()
+            
+        html_content = html_content.replace(
+            "// Authentication Check",
+            f"// Authentication Check\n  const INJECTED_TOKEN = '{token_for_client}';\n  if (INJECTED_TOKEN) localStorage.setItem('chatresearcher_token', INJECTED_TOKEN);"
+        )
+        
+        response = HTMLResponse(content=html_content)
         
         # If authorized via referer (SharePoint), ensure we set the session cookie
         # so subsequent fetch calls (which might lose the referer) work.
