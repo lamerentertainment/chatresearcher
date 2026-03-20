@@ -21,6 +21,7 @@ load_dotenv()
 SECRET = os.getenv("JWT_SECRET", "SUPER_SECRET_TOKEN_THAT_IS_LONGER_THAN_32_CHARACTERS_FOR_SECURITY")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123").strip()
 ALLOWED_DOMAINS = os.getenv("ALLOWED_FRAME_ANCESTORS", "https://*.sharepoint.com https://*.office.com").replace(',', ' ')
+SECURE_COOKIES = os.getenv("SECURE_COOKIES", "true").lower() == "true"
 
 class Base(DeclarativeBase):
     pass
@@ -67,7 +68,7 @@ cookie_transport = CookieTransport(
     cookie_name="chatresearcher_auth",
     cookie_max_age=3600,
     cookie_samesite="lax",
-    cookie_secure=False
+    cookie_secure=SECURE_COOKIES
 )
 
 def get_jwt_strategy() -> JWTStrategy:

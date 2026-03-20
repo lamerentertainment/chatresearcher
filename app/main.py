@@ -21,10 +21,11 @@ from app.auth import (
     create_db_and_tables,
     current_active_user,
     current_active_user_simplified,
-    ADMIN_PASSWORD,
-    User,
     UserRequest,
-    get_async_session
+    get_async_session,
+    SECURE_COOKIES,
+    ADMIN_PASSWORD,
+    User
 )
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -201,7 +202,7 @@ async def login_post(password: str = Form(...)):
             path="/",
             httponly=True, 
             samesite="lax",
-            secure=False # Use False so it works on http://localhost
+            secure=SECURE_COOKIES
         )
         return response
     print(f"DEBUG: Login failed. Provided password: {password[:1]}***")
