@@ -254,7 +254,7 @@
     search_opencaselaw: "OpenCaseLaw",
   };
 
-  function addToolWrap(name, toolInput) {
+  function addToolWrap(name, toolInput, insertBeforeEl) {
     const wrap = document.createElement("div");
     wrap.className = "tool-wrap";
 
@@ -288,7 +288,11 @@
       if (pill.classList.contains("done")) detail.classList.toggle("open");
     });
 
-    messagesEl.appendChild(wrap);
+    if (insertBeforeEl) {
+      messagesEl.insertBefore(wrap, insertBeforeEl);
+    } else {
+      messagesEl.appendChild(wrap);
+    }
     scrollBottom();
     return { pill, detail };
   }
@@ -299,6 +303,7 @@
 
     // Placeholder assistant bubble
     const bubble = addMessage("assistant", "");
+    const assistantMsgDiv = bubble.closest(".msg");
     bubble.textContent = "";
     let assistantText = "";
 
@@ -347,7 +352,7 @@
             scrollBottom();
 
           } else if (evt.type === "tool_start") {
-            const toolWrap = addToolWrap(evt.name, evt.input || {});
+            const toolWrap = addToolWrap(evt.name, evt.input || {}, assistantMsgDiv);
             activeTools[evt.name] = toolWrap;
 
           } else if (evt.type === "tool_done") {
