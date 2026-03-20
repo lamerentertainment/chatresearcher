@@ -206,11 +206,8 @@
   const inputEl    = document.getElementById("input");
   const sendBtn    = document.getElementById("send");
 
-  // Authentication Check
-  const token = localStorage.getItem('chatresearcher_token');
-  if (!token) {
-    window.location.href = '/login';
-  }
+  // Authentication will be handled by the backend via session cookies.
+  // If not authenticated, the backend will redirect to /login.
 
   // Conversation history sent with every request (stateless backend)
   let history = [];
@@ -312,14 +309,12 @@
       const res = await fetch("/chat", {
         method: "POST",
         headers: { 
-          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json" 
         },
         body: JSON.stringify({ messages: history, message: text }),
       });
 
       if (res.status === 401) {
-        localStorage.removeItem('chatresearcher_token');
         window.location.href = '/login';
         return;
       }

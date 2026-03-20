@@ -2,7 +2,7 @@ import os
 import json
 from typing import Optional
 
-from fastapi import FastAPI, Depends, Request, HTTPException, BackgroundTasks
+from fastapi import FastAPI, Depends, Request, HTTPException, BackgroundTasks, Form, status
 from fastapi.responses import StreamingResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -20,8 +20,9 @@ from app.auth import (
     UserCreate,
     create_db_and_tables,
     current_active_user,
+    current_active_user_simplified,
+    ADMIN_PASSWORD,
     User,
-    UserRead,
     UserRequest,
     get_async_session
 )
@@ -35,7 +36,7 @@ async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
     # Erlaube SharePoint und Office 365 Domains, die App in einem Iframe anzuzeigen.
     # Kann in der .env über ALLOWED_FRAME_ANCESTORS eingeschränkt werden.
-    allowed_ancestors = os.getenv("ALLOWED_FRAME_ANCESTORS", "https://*.sharepoint.com https://*.office.com")
+    allowed_ancestors = os.getenv("ALLOWED_FRAME_ANCESTORS", "https://*.sharepoint.com https://*.office.com").replace(',', ' ')
     response.headers["Content-Security-Policy"] = f"frame-ancestors 'self' {allowed_ancestors}"
     
     # X-Frame-Options entfernen, da es sonst zu Konflikten mit frame-ancestors kommen kann
@@ -85,17 +86,21 @@ async def debug_me(request: Request):
 # Admin Routes
 @app.get("/admin/users", tags=["admin"])
 async def list_users(
-    user: User = Depends(fastapi_users.current_user(active=True, superuser=True)),
+    user: User = Depends(current_active_user_simplified),
     session: AsyncSession = Depends(get_async_session)
 ):
+    if not user.is_superuser:
+        raise HTTPException(status_code=403, detail="Forbidden")
     result = await session.execute(select(User))
     return result.scalars().all()
 
 @app.get("/admin/requests", tags=["admin"])
 async def list_requests(
-    user: User = Depends(fastapi_users.current_user(active=True, superuser=True)),
+    user: User = Depends(current_active_user_simplified),
     session: AsyncSession = Depends(get_async_session)
 ):
+    if not user.is_superuser:
+        raise HTTPException(status_code=403, detail="Forbidden")
     result = await session.execute(select(UserRequest).order_by(UserRequest.timestamp.desc()).limit(100))
     return result.scalars().all()
 
@@ -120,7 +125,7 @@ class ChatRequest(BaseModel):
 async def chat(
     request: ChatRequest, 
     background_tasks: BackgroundTasks,
-    user: User = Depends(current_active_user)
+    user: User = Depends(current_active_user_simplified)
 ):
     async def wrapped_stream():
         tokens_input = 0
@@ -177,6 +182,7 @@ async def save_request_to_db(user_id: int, query: str, tokens_input: int, tokens
 @app.get("/logout")
 async def logout():
     response = RedirectResponse(url="/login")
+    response.delete_cookie("admin_auth")
     response.delete_cookie("chatresearcher_auth")
     return response
 
@@ -184,7 +190,28 @@ async def logout():
 def login():
     return FileResponse("static/login.html")
 
+@app.post("/login")
+async def login_post(password: str = Form(...)):
+    if password.strip() == ADMIN_PASSWORD:
+        print(f"DEBUG: Login successful. Setting cookie 'admin_auth'.")
+        response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+        response.set_cookie(
+            key="admin_auth", 
+            value=ADMIN_PASSWORD, 
+            path="/",
+            httponly=True, 
+            samesite="lax",
+            secure=False # Use False so it works on http://localhost
+        )
+        return response
+    print(f"DEBUG: Login failed. Provided password: {password[:1]}***")
+    return RedirectResponse(url="/login?error=1", status_code=status.HTTP_303_SEE_OTHER)
+
 
 @app.get("/")
-async def root():
-    return FileResponse("static/chat.html")
+async def root(request: Request, session: AsyncSession = Depends(get_async_session)):
+    try:
+        await current_active_user_simplified(request, session)
+        return FileResponse("static/chat.html")
+    except HTTPException:
+        return RedirectResponse(url="/login")
