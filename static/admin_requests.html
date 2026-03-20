@@ -188,8 +188,26 @@
         async function fetchData() {
             const tableBody = document.getElementById('tableBody');
             try {
-                const response = await fetch('/admin/requests?json=true');
-                if (!response.ok) throw new Error('Fehler beim Laden der Daten');
+                // Get token from URL or localStorage
+                const urlParams = new URLSearchParams(window.location.search);
+                let token = urlParams.get('token');
+                if (!token) {
+                    token = localStorage.getItem('chatresearcher_token');
+                }
+
+                const url = new URL('/admin/requests', window.location.origin);
+                url.searchParams.set('json', 'true');
+                if (token) {
+                    url.searchParams.set('token', token);
+                }
+
+                const response = await fetch(url);
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        throw new Error('Nicht autorisiert. Bitte loggen Sie sich erneut ein.');
+                    }
+                    throw new Error('Fehler beim Laden der Daten');
+                }
                 
                 allData = await response.json();
                 renderTable(allData);

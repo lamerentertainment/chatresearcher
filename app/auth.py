@@ -158,7 +158,20 @@ async def current_active_user_simplified(
         except:
             pass
 
-    # 2. Check if the request comes from SharePoint (Referer based)
+    # 2. Check for admin session cookie
+    auth_token = request.cookies.get("__session")
+    # Debug logging
+    print(f"DEBUG: Cookie '__session' found: {auth_token is not None}")
+    if auth_token:
+        print(f"DEBUG: Cookie value length: {len(auth_token)}")
+    
+    if auth_token and auth_token.strip() == ADMIN_PASSWORD:
+        return await get_admin_user(session)
+
+    if auth_token and auth_token.strip() == "sharepoint-access":
+        return await get_sharepoint_user(session)
+
+    # 3. Check if the request comes from SharePoint (Referer based)
     referer = request.headers.get("referer", "")
     origin = request.headers.get("origin", "")
     
@@ -171,19 +184,6 @@ async def current_active_user_simplified(
             break
             
     if is_from_allowed_domain:
-        return await get_sharepoint_user(session)
-
-    # 2. Check for admin session cookie
-    auth_token = request.cookies.get("__session")
-    # Debug logging
-    print(f"DEBUG: Cookie '__session' found: {auth_token is not None}")
-    if auth_token:
-        print(f"DEBUG: Cookie value length: {len(auth_token)}")
-    
-    if auth_token and auth_token.strip() == ADMIN_PASSWORD:
-        return await get_admin_user(session)
-
-    if auth_token and auth_token.strip() == "sharepoint-access":
         return await get_sharepoint_user(session)
 
     # 3. Fallback: If not authenticated, raise error or redirect (handled in main.py)
