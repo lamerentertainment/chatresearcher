@@ -1,6 +1,12 @@
-# Deployment Guide: Chat Researcher (Cloud Run + Firebase)
+## 0. Automatisiertes Deployment (Empfohlen)
 
-Diese Anleitung erklärt Schritt für Schritt, wie du die Anwendung auf Google Cloud Run und Firebase Hosting veröffentlichst.
+Du kannst das gesamte Deployment (Datenimport + Backend + Frontend) mit einem einzigen Befehl ausführen:
+
+```bash
+./deploy.sh
+```
+
+Dies führt automatisch `import_data.py` aus und lädt anschließend beide Teile der App hoch.
 
 ## 1. Voraussetzungen
 
