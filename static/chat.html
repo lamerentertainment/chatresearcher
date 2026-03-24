@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat Researcher</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -24,7 +29,13 @@
       font-weight: 600;
       letter-spacing: 0.3px;
     }
-    header span { color: #7c9cbf; font-weight: 400; font-size: 13px; margin-left: 10px; }
+
+    header span {
+      color: #7c9cbf;
+      font-weight: 400;
+      font-size: 13px;
+      margin-left: 10px;
+    }
 
     #messages {
       flex: 1;
@@ -39,8 +50,14 @@
       max-width: 780px;
       width: 100%;
     }
-    .msg.user { align-self: flex-end; }
-    .msg.assistant { align-self: flex-start; }
+
+    .msg.user {
+      align-self: flex-end;
+    }
+
+    .msg.assistant {
+      align-self: flex-start;
+    }
 
     .bubble {
       padding: 12px 16px;
@@ -49,42 +66,88 @@
       font-size: 14px;
       word-break: break-word;
     }
-    .msg.user .bubble { white-space: pre-wrap; }
+
+    .msg.user .bubble {
+      white-space: pre-wrap;
+    }
+
     .msg.user .bubble {
       background: #1a1a2e;
       color: #fff;
       border-bottom-right-radius: 3px;
     }
+
     .msg.assistant .bubble {
       background: #fff;
       color: #222;
       border: 1px solid #e0e0e0;
       border-bottom-left-radius: 3px;
     }
+
     .msg.assistant .bubble h1,
     .msg.assistant .bubble h2,
-    .msg.assistant .bubble h3 { margin: 10px 0 4px; font-size: 1em; font-weight: 700; }
-    .msg.assistant .bubble p { margin: 6px 0; }
-    .msg.assistant .bubble ul,
-    .msg.assistant .bubble ol { margin: 6px 0 6px 18px; }
-    .msg.assistant .bubble li { margin: 3px 0; }
-    .msg.assistant .bubble code {
-      background: #f0f0f0; border-radius: 3px;
-      padding: 1px 4px; font-size: 13px; font-family: monospace;
+    .msg.assistant .bubble h3 {
+      margin: 10px 0 4px;
+      font-size: 1em;
+      font-weight: 700;
     }
-    .msg.assistant .bubble pre {
-      background: #f0f0f0; border-radius: 6px;
-      padding: 10px 12px; overflow-x: auto; margin: 8px 0;
-    }
-    .msg.assistant .bubble pre code { background: none; padding: 0; }
-    .msg.assistant .bubble blockquote {
-      border-left: 3px solid #c5d8f0; margin: 6px 0;
-      padding: 2px 10px; color: #555;
-    }
-    .msg.assistant .bubble hr { border: none; border-top: 1px solid #e0e0e0; margin: 8px 0; }
-    .msg.assistant .bubble a { color: #2c5f9e; }
 
-    .tool-wrap { align-self: flex-start; max-width: 780px; width: 100%; }
+    .msg.assistant .bubble p {
+      margin: 6px 0;
+    }
+
+    .msg.assistant .bubble ul,
+    .msg.assistant .bubble ol {
+      margin: 6px 0 6px 18px;
+    }
+
+    .msg.assistant .bubble li {
+      margin: 3px 0;
+    }
+
+    .msg.assistant .bubble code {
+      background: #f0f0f0;
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-size: 13px;
+      font-family: monospace;
+    }
+
+    .msg.assistant .bubble pre {
+      background: #f0f0f0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      overflow-x: auto;
+      margin: 8px 0;
+    }
+
+    .msg.assistant .bubble pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .msg.assistant .bubble blockquote {
+      border-left: 3px solid #c5d8f0;
+      margin: 6px 0;
+      padding: 2px 10px;
+      color: #555;
+    }
+
+    .msg.assistant .bubble hr {
+      border: none;
+      border-top: 1px solid #e0e0e0;
+      margin: 8px 0;
+    }
+
+    .msg.assistant .bubble a {
+      color: #2c5f9e;
+    }
+
+    .tool-wrap {
+      align-self: flex-start;
+      max-width: 780px;
+      width: 100%;
+    }
 
     .tool-pill {
       display: inline-flex;
@@ -100,13 +163,17 @@
       cursor: default;
       user-select: none;
     }
+
     .tool-pill.done {
       background: #edfbf1;
       border-color: #b0e5c0;
       color: #1e7a3e;
       cursor: pointer;
     }
-    .tool-pill.done:hover { background: #d6f5e1; }
+
+    .tool-pill.done:hover {
+      background: #d6f5e1;
+    }
 
     .tool-detail {
       display: none;
@@ -117,10 +184,25 @@
       font-size: 12px;
       overflow: hidden;
     }
-    .tool-detail.open { display: block; }
-    .tool-detail-section { padding: 8px 12px; }
-    .tool-detail-section + .tool-detail-section { border-top: 1px solid #f0f0f0; }
-    .tool-detail-label { font-weight: 600; color: #555; margin-bottom: 4px; }
+
+    .tool-detail.open {
+      display: block;
+    }
+
+    .tool-detail-section {
+      padding: 8px 12px;
+    }
+
+    .tool-detail-section+.tool-detail-section {
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .tool-detail-label {
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 4px;
+    }
+
     .tool-detail-body {
       color: #333;
       white-space: pre-wrap;
@@ -137,17 +219,28 @@
       padding: 2px 8px;
       margin-top: -8px;
     }
-    .tool-pill svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+    .tool-pill svg {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+    }
 
     .spinner {
       display: inline-block;
-      width: 12px; height: 12px;
+      width: 12px;
+      height: 12px;
       border: 2px solid #c5d8f0;
       border-top-color: #2c5f9e;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     #form {
       border-top: 1px solid #ddd;
@@ -170,7 +263,10 @@
       max-height: 140px;
       overflow-y: auto;
     }
-    #input:focus { border-color: #1a1a2e; }
+
+    #input:focus {
+      border-color: #1a1a2e;
+    }
 
     #send {
       background: #1a1a2e;
@@ -183,240 +279,248 @@
       align-self: flex-end;
       height: 42px;
     }
-    #send:disabled { opacity: 0.4; cursor: not-allowed; }
-    #send:hover:not(:disabled) { background: #2c2c4e; }
+
+    #send:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    #send:hover:not(:disabled) {
+      background: #2c2c4e;
+    }
   </style>
 </head>
+
 <body>
 
-<header>
-  Chat Researcher
-  <span>Lokale Präjudizen + OpenCaseLaw</span>
-</header>
+  <header>
+    Chat Researcher
+    <span>KRG Präjudizen + OpenCaseLaw</span>
+  </header>
 
-<div id="messages"></div>
+  <div id="messages"></div>
 
-<form id="form">
-  <textarea id="input" rows="1" placeholder="Rechtsfrage eingeben..." autofocus></textarea>
-  <button id="send" type="submit">Senden</button>
-</form>
+  <form id="form">
+    <textarea id="input" rows="1" placeholder="Rechtsfrage eingeben..." autofocus></textarea>
+    <button id="send" type="submit">Senden</button>
+  </form>
 
-<script>
-  const messagesEl = document.getElementById("messages");
-  const inputEl    = document.getElementById("input");
-  const sendBtn    = document.getElementById("send");
+  <script>
+    const messagesEl = document.getElementById("messages");
+    const inputEl = document.getElementById("input");
+    const sendBtn = document.getElementById("send");
 
-  // Configure marked.js to open links in a new window
-  marked.use({
-    renderer: {
-      link(token) {
-        const href = token.href;
-        const title = token.title;
-        const text = token.text;
-        return `<a href="${href}" ${title ? `title="${title}"` : ''} target="_blank" rel="noopener noreferrer">${text}</a>`;
-      }
-    }
-  });
-
-  // Authentication Check
-  const token = localStorage.getItem('chatresearcher_token');
-
-  // Conversation history sent with every request (stateless backend)
-  let history = [];
-
-  // Auto-resize textarea
-  inputEl.addEventListener("input", () => {
-    inputEl.style.height = "auto";
-    inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + "px";
-  });
-
-  // Submit on Enter (Shift+Enter = newline)
-  inputEl.addEventListener("keydown", e => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
-  });
-
-  document.getElementById("form").addEventListener("submit", e => {
-    e.preventDefault();
-    submit();
-  });
-
-  function submit() {
-    const text = inputEl.value.trim();
-    if (!text || sendBtn.disabled) return;
-    inputEl.value = "";
-    inputEl.style.height = "auto";
-    sendMessage(text);
-  }
-
-  function addMessage(role, text) {
-    const div = document.createElement("div");
-    div.className = `msg ${role}`;
-    div.innerHTML = `<div class="bubble">${escHtml(text)}</div>`;
-    messagesEl.appendChild(div);
-    scrollBottom();
-    return div.querySelector(".bubble");
-  }
-
-  const TOOL_ICONS = {
-    search_local_cases: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`,
-    search_opencaselaw: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
-  };
-  const TOOL_LABELS = {
-    search_local_cases: "Lokale DB",
-    search_opencaselaw: "OpenCaseLaw",
-  };
-
-  function addToolWrap(name, toolInput, insertBeforeEl) {
-    const wrap = document.createElement("div");
-    wrap.className = "tool-wrap";
-
-    const pill = document.createElement("div");
-    pill.className = "tool-pill";
-    pill.innerHTML = (TOOL_ICONS[name] || "") +
-      `<span>${TOOL_LABELS[name] || name}</span>` +
-      `<span class="spinner"></span>`;
-    wrap.appendChild(pill);
-
-    const detail = document.createElement("div");
-    detail.className = "tool-detail";
-
-    // Query section
-    const querySection = document.createElement("div");
-    querySection.className = "tool-detail-section";
-    querySection.innerHTML = `<div class="tool-detail-label">Suchanfrage</div>` +
-      `<div class="tool-detail-body">${escHtml(JSON.stringify(toolInput, null, 2))}</div>`;
-    detail.appendChild(querySection);
-
-    // Result section (filled later)
-    const resultSection = document.createElement("div");
-    resultSection.className = "tool-detail-section";
-    resultSection.innerHTML = `<div class="tool-detail-label">Ergebnis</div>` +
-      `<div class="tool-detail-body result-body"></div>`;
-    detail.appendChild(resultSection);
-
-    wrap.appendChild(detail);
-
-    pill.addEventListener("click", () => {
-      if (pill.classList.contains("done")) detail.classList.toggle("open");
-    });
-
-    if (insertBeforeEl) {
-      messagesEl.insertBefore(wrap, insertBeforeEl);
-    } else {
-      messagesEl.appendChild(wrap);
-    }
-    scrollBottom();
-    return { pill, detail };
-  }
-
-  async function sendMessage(text) {
-    sendBtn.disabled = true;
-    addMessage("user", text);
-
-    // Placeholder assistant bubble
-    const bubble = addMessage("assistant", "");
-    const assistantMsgDiv = bubble.closest(".msg");
-    bubble.textContent = "";
-    let assistantText = "";
-
-    // Track active tool wraps (name -> {pill, detail})
-    const activeTools = {};
-
-    try {
-      const res = await fetch("/chat", {
-        method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json" 
-        },
-        body: JSON.stringify({ messages: history, message: text }),
-      });
-
-      if (res.status === 401) {
-        window.location.href = '/login';
-        return;
-      }
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-
-        // Parse SSE lines
-        const lines = buf.split("\n\n");
-        buf = lines.pop(); // keep incomplete last chunk
-
-        for (const block of lines) {
-          const line = block.replace(/^data: /, "").trim();
-          if (!line) continue;
-          let evt;
-          try { evt = JSON.parse(line); } catch { continue; }
-
-          if (evt.type === "text") {
-            assistantText += evt.content;
-            bubble.innerHTML = marked.parse(assistantText);
-            scrollBottom();
-
-          } else if (evt.type === "tool_start") {
-            const toolWrap = addToolWrap(evt.name, evt.input || {}, assistantMsgDiv);
-            activeTools[evt.name] = toolWrap;
-
-          } else if (evt.type === "tool_done") {
-            const toolWrap = activeTools[evt.name];
-            if (toolWrap) {
-              toolWrap.pill.classList.add("done");
-              toolWrap.pill.querySelector(".spinner")?.remove();
-              const chevron = document.createElement("span");
-              chevron.textContent = " ▾";
-              toolWrap.pill.appendChild(chevron);
-              if (evt.result) {
-                toolWrap.detail.querySelector(".result-body").textContent = evt.result;
-              }
-            }
-
-          } else if (evt.type === "cost") {
-            const badge = document.createElement("div");
-            badge.className = "cost-badge";
-            const cents = (evt.cost_usd * 100).toFixed(3);
-            badge.textContent = `${evt.input_tokens} in / ${evt.output_tokens} out — $${evt.cost_usd.toFixed(4)} (${cents}¢)`;
-            messagesEl.appendChild(badge);
-            scrollBottom();
-
-          } else if (evt.type === "done") {
-            // Append to history
-            history.push({ role: "user", content: text });
-            history.push({ role: "assistant", content: assistantText });
-
-          } else if (evt.type === "error") {
-            bubble.innerHTML = marked.parse("**Fehler:** " + escHtml(evt.content));
-          }
+    // Configure marked.js to open links in a new window
+    marked.use({
+      renderer: {
+        link(token) {
+          const href = token.href;
+          const title = token.title;
+          const text = token.text;
+          return `<a href="${href}" ${title ? `title="${title}"` : ''} target="_blank" rel="noopener noreferrer">${text}</a>`;
         }
       }
-    } catch (err) {
-      bubble.textContent = "Verbindungsfehler: " + err.message;
-      if (err.message.includes("401")) window.location.href = '/login';
+    });
+
+    // Authentication Check
+    const token = localStorage.getItem('chatresearcher_token');
+
+    // Conversation history sent with every request (stateless backend)
+    let history = [];
+
+    // Auto-resize textarea
+    inputEl.addEventListener("input", () => {
+      inputEl.style.height = "auto";
+      inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + "px";
+    });
+
+    // Submit on Enter (Shift+Enter = newline)
+    inputEl.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
+    });
+
+    document.getElementById("form").addEventListener("submit", e => {
+      e.preventDefault();
+      submit();
+    });
+
+    function submit() {
+      const text = inputEl.value.trim();
+      if (!text || sendBtn.disabled) return;
+      inputEl.value = "";
+      inputEl.style.height = "auto";
+      sendMessage(text);
     }
 
-    sendBtn.disabled = false;
-    inputEl.focus();
-  }
+    function addMessage(role, text) {
+      const div = document.createElement("div");
+      div.className = `msg ${role}`;
+      div.innerHTML = `<div class="bubble">${escHtml(text)}</div>`;
+      messagesEl.appendChild(div);
+      scrollBottom();
+      return div.querySelector(".bubble");
+    }
 
-  function scrollBottom() {
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-  }
+    const TOOL_ICONS = {
+      search_local_cases: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`,
+      search_opencaselaw: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+    };
+    const TOOL_LABELS = {
+      search_local_cases: "Lokale DB",
+      search_opencaselaw: "OpenCaseLaw",
+    };
 
-  function escHtml(str) {
-    return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  }
+    function addToolWrap(name, toolInput, insertBeforeEl) {
+      const wrap = document.createElement("div");
+      wrap.className = "tool-wrap";
 
-  // Initial Welcome Message
-  const welcomeText = `Guten Tag! Ich bin Ihr juristischer Rechercheassistent für Schweizer Strafrecht. Ich kann Sie bei folgenden Aufgaben unterstützen:
+      const pill = document.createElement("div");
+      pill.className = "tool-pill";
+      pill.innerHTML = (TOOL_ICONS[name] || "") +
+        `<span>${TOOL_LABELS[name] || name}</span>` +
+        `<span class="spinner"></span>`;
+      wrap.appendChild(pill);
+
+      const detail = document.createElement("div");
+      detail.className = "tool-detail";
+
+      // Query section
+      const querySection = document.createElement("div");
+      querySection.className = "tool-detail-section";
+      querySection.innerHTML = `<div class="tool-detail-label">Suchanfrage</div>` +
+        `<div class="tool-detail-body">${escHtml(JSON.stringify(toolInput, null, 2))}</div>`;
+      detail.appendChild(querySection);
+
+      // Result section (filled later)
+      const resultSection = document.createElement("div");
+      resultSection.className = "tool-detail-section";
+      resultSection.innerHTML = `<div class="tool-detail-label">Ergebnis</div>` +
+        `<div class="tool-detail-body result-body"></div>`;
+      detail.appendChild(resultSection);
+
+      wrap.appendChild(detail);
+
+      pill.addEventListener("click", () => {
+        if (pill.classList.contains("done")) detail.classList.toggle("open");
+      });
+
+      if (insertBeforeEl) {
+        messagesEl.insertBefore(wrap, insertBeforeEl);
+      } else {
+        messagesEl.appendChild(wrap);
+      }
+      scrollBottom();
+      return { pill, detail };
+    }
+
+    async function sendMessage(text) {
+      sendBtn.disabled = true;
+      addMessage("user", text);
+
+      // Placeholder assistant bubble
+      const bubble = addMessage("assistant", "");
+      const assistantMsgDiv = bubble.closest(".msg");
+      bubble.textContent = "";
+      let assistantText = "";
+
+      // Track active tool wraps (name -> {pill, detail})
+      const activeTools = {};
+
+      try {
+        const res = await fetch("/chat", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ messages: history, message: text }),
+        });
+
+        if (res.status === 401) {
+          window.location.href = '/login';
+          return;
+        }
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+
+          // Parse SSE lines
+          const lines = buf.split("\n\n");
+          buf = lines.pop(); // keep incomplete last chunk
+
+          for (const block of lines) {
+            const line = block.replace(/^data: /, "").trim();
+            if (!line) continue;
+            let evt;
+            try { evt = JSON.parse(line); } catch { continue; }
+
+            if (evt.type === "text") {
+              assistantText += evt.content;
+              bubble.innerHTML = marked.parse(assistantText);
+              scrollBottom();
+
+            } else if (evt.type === "tool_start") {
+              const toolWrap = addToolWrap(evt.name, evt.input || {}, assistantMsgDiv);
+              activeTools[evt.name] = toolWrap;
+
+            } else if (evt.type === "tool_done") {
+              const toolWrap = activeTools[evt.name];
+              if (toolWrap) {
+                toolWrap.pill.classList.add("done");
+                toolWrap.pill.querySelector(".spinner")?.remove();
+                const chevron = document.createElement("span");
+                chevron.textContent = " ▾";
+                toolWrap.pill.appendChild(chevron);
+                if (evt.result) {
+                  toolWrap.detail.querySelector(".result-body").textContent = evt.result;
+                }
+              }
+
+            } else if (evt.type === "cost") {
+              const badge = document.createElement("div");
+              badge.className = "cost-badge";
+              const cents = (evt.cost_usd * 100).toFixed(3);
+              badge.textContent = `${evt.input_tokens} in / ${evt.output_tokens} out — $${evt.cost_usd.toFixed(4)} (${cents}¢)`;
+              messagesEl.appendChild(badge);
+              scrollBottom();
+
+            } else if (evt.type === "done") {
+              // Append to history
+              history.push({ role: "user", content: text });
+              history.push({ role: "assistant", content: assistantText });
+
+            } else if (evt.type === "error") {
+              bubble.innerHTML = marked.parse("**Fehler:** " + escHtml(evt.content));
+            }
+          }
+        }
+      } catch (err) {
+        bubble.textContent = "Verbindungsfehler: " + err.message;
+        if (err.message.includes("401")) window.location.href = '/login';
+      }
+
+      sendBtn.disabled = false;
+      inputEl.focus();
+    }
+
+    function scrollBottom() {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Initial Welcome Message
+    const welcomeText = `Guten Tag! Ich bin Ihr juristischer Rechercheassistent für Schweizer Strafrecht. Ich kann Sie bei folgenden Aufgaben unterstützen:
 
 - **Lokale Datenbank:** Suche nach internen Präjudizen des Kriminalgerichts Luzern.
 - **OpenCaseLaw:** Recherche in über 956'000 Entscheiden, inklusive Leitentscheiden und Zitationsanalysen.
@@ -425,10 +529,11 @@
 
 Wie kann ich Ihnen heute bei Ihrer Recherche helfen?`;
 
-  const welcomeBubble = addMessage("assistant", "");
-  welcomeBubble.innerHTML = marked.parse(welcomeText);
-  // Ensure the welcome message is in the history so the AI knows it sent it
-  history.push({ role: "assistant", content: welcomeText });
-</script>
+    const welcomeBubble = addMessage("assistant", "");
+    welcomeBubble.innerHTML = marked.parse(welcomeText);
+    // Ensure the welcome message is in the history so the AI knows it sent it
+    history.push({ role: "assistant", content: welcomeText });
+  </script>
 </body>
+
 </html>
