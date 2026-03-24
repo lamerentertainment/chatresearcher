@@ -24,6 +24,36 @@ TOOL_DEFINITIONS = [
     # Local DB
     # ------------------------------------------------------------------
     {
+        "name": "list_regesten",
+        "description": (
+            "Listet alle in der lokalen Datenbank vorhandenen Präjudizen auf. "
+            "Gibt für jedes Präjudiz den Titel und die Regeste (Zusammenfassung) zurück. "
+            "Nützlich, um sich einen Überblick über alle internen Fälle zu verschaffen."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
+    {
+        "name": "get_praejudiz",
+        "description": (
+            "Ruft die kompletten Details (Titel, Regeste und Urteilsauszug) eines "
+            "einzelnen lokalen Präjudizes anhand seines exakten Titels ab."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "titel": {
+                    "type": "string",
+                    "description": "Der exakte Titel des Präjudizes, das abgerufen werden soll.",
+                },
+            },
+            "required": ["titel"],
+        },
+    },
+    {
         "name": "search_local_cases",
         "description": (
             "Durchsucht die lokale Datenbank der internen Präjudizen des Kriminalgerichts Luzern. "
@@ -306,8 +336,64 @@ TOOL_DEFINITIONS = [
 
 
 # ---------------------------------------------------------------------------
-# Tool 1: Local DB search
+# Tool 1-3: Local DB search
 # ---------------------------------------------------------------------------
+
+def list_regesten() -> str:
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+
+        rows = conn.execute(
+            """
+            SELECT titel, regeste
+            FROM praejudizen
+            ORDER BY id DESC
+            """
+        ).fetchall()
+        conn.close()
+
+        if not rows:
+            return "Keine Präjudizen in der Datenbank vorhanden."
+
+        parts = []
+        for row in rows:
+            parts.append(
+                f"- **{row['titel']}**\n  Regeste: {row['regeste']}"
+            )
+        return f"Vorhandene Präjudizen ({len(rows)}):\n\n" + "\n\n".join(parts)
+
+    except Exception as e:
+        return f"Fehler beim Abrufen der Regesten: {e}"
+
+
+def get_praejudiz(titel: str) -> str:
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+
+        row = conn.execute(
+            """
+            SELECT titel, regeste, urteilsauszug
+            FROM praejudizen
+            WHERE titel = ?
+            """,
+            (titel,),
+        ).fetchone()
+        conn.close()
+
+        if not row:
+            return f"Kein Präjudiz mit dem Titel '{titel}' gefunden."
+
+        return (
+            f"**{row['titel']}**\n\n"
+            f"**Regeste:**\n{row['regeste']}\n\n"
+            f"**Urteilsauszug:**\n{row['urteilsauszug']}"
+        )
+
+    except Exception as e:
+        return f"Fehler beim Abrufen des Präjudizes: {e}"
+
 
 def search_local_cases(query: str, limit: int = 5) -> str:
     try:
@@ -387,7 +473,11 @@ async def call_opencaselaw(tool_name: str, params: dict) -> str:
 # ---------------------------------------------------------------------------
 
 async def execute_tool(name: str, tool_input: dict) -> str:
-    if name == "search_local_cases":
+    if name == "list_regesten":
+        return list_regesten()
+    elif name == "get_praejudiz":
+        return get_praejudiz(titel=tool_input["titel"])
+    elif name == "search_local_cases":
         return search_local_cases(
             query=tool_input["query"],
             limit=tool_input.get("limit", 5),

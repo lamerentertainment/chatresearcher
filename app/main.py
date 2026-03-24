@@ -174,6 +174,8 @@ async def chat(
             "Cache-Control": "no-cache, no-transform, must-revalidate",
             "X-Accel-Buffering": "no",
             "X-Content-Type-Options": "nosniff",
+            "Connection": "keep-alive",
+            "Content-Encoding": "identity",
         },
     )
 

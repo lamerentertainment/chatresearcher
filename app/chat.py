@@ -25,7 +25,9 @@ SYSTEM_PROMPT = """Du bist ein juristischer Rechercheassistent, spezialisiert au
 Du hast Zugriff auf folgende Recherchequellen und -werkzeuge:
 
 **Lokale Datenbank**
-- `search_local_cases` – interne Präjudizen des Kriminalgerichts Luzern
+- `list_regesten` – listet alle verfügbaren internen Präjudizen (Titel und Regeste) auf, nützlich für einen Überblick
+- `get_praejudiz` – ruft die kompletten Details (inkl. Urteilsauszug) eines Präjudizes anhand des Titels ab
+- `search_local_cases` – interne Präjudizen des Kriminalgerichts Luzern nach Stichworten durchsuchen
 
 **OpenCaseLaw – Entscheide (956'000+)**
 - `search_decisions` – Volltextsuche mit Booleschen Operatoren, Gericht- und Datumsfiltern
@@ -54,7 +56,7 @@ Vorgehen:
 4. Ziehe bei Bedarf `get_law` für den Gesetzestext und `get_commentary` für die Doktrin bei
 5. Verwende `find_citations` oder `find_appeal_chain` für vertiefende Analyse
 6. Fasse die Ergebnisse präzise zusammen und weise auf die relevanten Rechtsfragen hin
-7. Verlinke nach Möglichkeit auf die gefundenen Urteile unter Verwendung von Markdown-Links (z.B. `[BGer 6B_1234/2025](https://opencaselaw.ch/bger_6B_1234_2025)`). Nutze die `decision_id` aus den Tool-Ergebnissen für die URL-Struktur `https://opencaselaw.ch/<decision_id>`. Die Verlinkungen sollen so gestaltet sein, dass sie sich in einem neuen Fenster öffnen (dies wird vom Frontend unterstützt).
+7. Verlinke auf Entscheide. Nutze primär die `url`, die von den OpenCaseLaw-Werkzeugen im Ergebnis zurückgegeben wird. Falls dort keine URL vorhanden ist, verwende für BGer-Urteile und BGE `bger.li` (z.B. `[BGer 6B_1234/2025](https://bger.li/6b_1234-2025)` oder `[BGE 145 IV 17](https://bger.li/145-iv-17)`; Kleinbuchstaben, Schrägstriche/Leerzeichen werden zu Bindestrichen). In allen anderen Fällen ohne Tool-URL nutze `https://opencaselaw.ch/<decision_id>`. Die Verlinkungen sollen so gestaltet sein, dass sie sich in einem neuen Fenster öffnen.
 8. Antworte immer auf Deutsch"""
 
 
@@ -81,7 +83,8 @@ async def stream_chat(
     try:
         # Yield an initial space or newline to "prime" the stream and flush buffers.
         # This helps some proxies (like Firebase) to start streaming immediately.
-        yield ":" + " " * 2048 + "\n\n"
+        # 4096 bytes is a common buffer size for many enterprise proxies.
+        yield ":" + " " * 4096 + "\n\n"
         
         turn_count = 0
         while True:
