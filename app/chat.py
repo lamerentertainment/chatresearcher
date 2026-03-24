@@ -56,7 +56,7 @@ Vorgehen:
 4. Ziehe bei Bedarf `get_law` für den Gesetzestext und `get_commentary` für die Doktrin bei
 5. Verwende `find_citations` oder `find_appeal_chain` für vertiefende Analyse
 6. Fasse die Ergebnisse präzise zusammen und weise auf die relevanten Rechtsfragen hin
-7. Verlinke auf Entscheide. Nutze primär die `url`, die von den OpenCaseLaw-Werkzeugen im Ergebnis zurückgegeben wird. Falls dort keine URL vorhanden ist, verwende für BGer-Urteile und BGE `bger.li` (z.B. `[BGer 6B_1234/2025](https://bger.li/6b_1234-2025)` oder `[BGE 145 IV 17](https://bger.li/145-iv-17)`; Kleinbuchstaben, Schrägstriche/Leerzeichen werden zu Bindestrichen). In allen anderen Fällen ohne Tool-URL nutze `https://opencaselaw.ch/<decision_id>`. Die Verlinkungen sollen so gestaltet sein, dass sie sich in einem neuen Fenster öffnen.
+7. Verlinke auf Entscheide. Nutze immer und ausschliesslich die `url`, die von den OpenCaseLaw-Werkzeugen im Ergebnis zurückgegeben wird. Erstelle keine eigenen Links (z.B. bger.li oder direkte opencaselaw.ch-Pfade), falls keine URL im Tool-Resultat vorhanden ist. Die Verlinkungen sollen so gestaltet sein, dass sie sich in einem neuen Fenster öffnen.
 8. Antworte immer auf Deutsch"""
 
 

@@ -316,10 +316,104 @@
     #send:hover:not(:disabled) {
       background: #2c2c4e;
     }
+    /* Modal styles */
+    #modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(2px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #modal {
+      background: #fff;
+      padding: 24px;
+      border-radius: 14px;
+      max-width: 380px;
+      width: calc(100% - 40px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      animation: modalIn 0.2s ease-out;
+    }
+
+    @keyframes modalIn {
+      from {
+        transform: scale(0.95);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    #modal h3 {
+      font-size: 18px;
+      margin-bottom: 12px;
+      color: #1a1a2e;
+    }
+
+    #modal p {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .modal-btn {
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .modal-btn.cancel {
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      color: #444;
+    }
+
+    .modal-btn.cancel:hover {
+      background: #e5e5e5;
+    }
+
+    .modal-btn.confirm {
+      background: #1a1a2e;
+      color: #fff;
+      border: none;
+    }
+
+    .modal-btn.confirm:hover {
+      background: #2c2c4e;
+    }
   </style>
 </head>
 
 <body>
+
+  <div id="modal-overlay">
+    <div id="modal">
+      <h3>Chat leeren?</h3>
+      <p>Möchten Sie den aktuellen Chat wirklich leeren und einen neuen beginnen? Der bisherige Verlauf wird gelöscht.</p>
+      <div class="modal-buttons">
+        <button class="modal-btn cancel" id="modal-cancel">Abbrechen</button>
+        <button class="modal-btn confirm" id="modal-confirm">Neuer Chat</button>
+      </div>
+    </div>
+  </div>
 
   <header>
     <div>
@@ -349,6 +443,9 @@
     const inputEl = document.getElementById("input");
     const sendBtn = document.getElementById("send");
     const newChatBtn = document.getElementById("new-chat");
+    const modalOverlay = document.getElementById("modal-overlay");
+    const modalCancel = document.getElementById("modal-cancel");
+    const modalConfirm = document.getElementById("modal-confirm");
 
     // Configure marked.js to open links in a new window
     marked.use({
@@ -386,14 +483,24 @@
 
     newChatBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      // Show confirm if there's any conversation on screen beyond welcome message
       if (messagesEl.children.length > 1) {
-        if (confirm("Möchten Sie den aktuellen Chat wirklich leeren und einen neuen beginnen?")) {
-          window.location.reload();
-        }
+        modalOverlay.style.display = "flex";
       } else {
         window.location.reload();
       }
+    });
+
+    modalCancel.addEventListener("click", () => {
+      modalOverlay.style.display = "none";
+    });
+
+    modalConfirm.addEventListener("click", () => {
+      window.location.reload();
+    });
+
+    // Close modal on escape
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") modalOverlay.style.display = "none";
     });
 
     function submit() {
