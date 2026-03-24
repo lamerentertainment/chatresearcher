@@ -402,6 +402,21 @@
   function escHtml(str) {
     return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
+
+  // Initial Welcome Message
+  const welcomeText = `Guten Tag! Ich bin Ihr juristischer Rechercheassistent für Schweizer Strafrecht. Ich kann Sie bei folgenden Aufgaben unterstützen:
+
+- **Lokale Datenbank:** Suche nach internen Präjudizen des Kriminalgerichts Luzern.
+- **OpenCaseLaw:** Recherche in über 956'000 Entscheiden, inklusive Leitentscheiden und Zitationsanalysen.
+- **Gesetze:** Abruf von Artikeln aus StGB, StPO, BV, OR und weiteren Bundesgesetzen.
+- **Doktrin & Kommentare:** Zugriff auf wissenschaftliche Kommentare (OnlineKommentar.ch) und dogmatische Analysen.
+
+Wie kann ich Ihnen heute bei Ihrer Recherche helfen?`;
+
+  const welcomeBubble = addMessage("assistant", "");
+  welcomeBubble.innerHTML = marked.parse(welcomeText);
+  // Ensure the welcome message is in the history so the AI knows it sent it
+  history.push({ role: "assistant", content: welcomeText });
 </script>
 </body>
 </html>

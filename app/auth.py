@@ -145,6 +145,7 @@ async def current_active_user_simplified(
     session: AsyncSession = Depends(get_async_session),
     user_manager: UserManager = Depends(get_user_manager)
 ) -> User:
+    print(f"DEBUG: Authentication check for {request.url.path}")
     # 1. Check for token (Priority: Query Param > Authorization Header)
     # Query param is used for the initial page load in iframes after login.
     token = request.query_params.get("token")
@@ -154,15 +155,22 @@ async def current_active_user_simplified(
             token = auth_header.replace("Bearer ", "")
     
     if token:
+        print(f"DEBUG: Token found in {'query_params' if request.query_params.get('token') else 'headers'}. Length: {len(token)}")
         strategy = JWTStrategy(secret=SECRET, lifetime_seconds=3600, token_audience="fastapi-users:jwt-bearer")
         try:
             user = await strategy.read_token(token, user_manager)
-            if user and user.is_active:
-                print(f"DEBUG: Authenticated via token. User: {user.email}, Superuser: {user.is_superuser}")
-                return user
+            if user:
+                if user.is_active:
+                    print(f"DEBUG: Authenticated via token. User: {user.email}, Superuser: {user.is_superuser}")
+                    return user
+                else:
+                    print(f"DEBUG: Token auth failed: User {user.email} is not active.")
+            else:
+                print(f"DEBUG: Token auth failed: strategy.read_token returned None.")
         except Exception as e:
-            print(f"DEBUG: Token auth failed: {e}")
-            pass
+            print(f"DEBUG: Token auth failed with error: {type(e).__name__}: {str(e)}")
+            import traceback
+            traceback.print_exc()
 
     # 2. Check for admin session cookie
     auth_token = request.cookies.get("__session")

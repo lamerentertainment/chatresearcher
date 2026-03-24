@@ -27,7 +27,8 @@ from app.auth import (
     ADMIN_PASSWORD,
     User,
     generate_token_for_user,
-    get_admin_user
+    get_admin_user,
+    get_user_manager
 )
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -206,7 +207,7 @@ async def login_post(password: str = Form(...), session: AsyncSession = Depends(
     if password.strip() == ADMIN_PASSWORD:
         admin_user = await get_admin_user(session)
         token = await generate_token_for_user(admin_user)
-        print(f"DEBUG: Login successful. Setting cookie '__session' and returning token.")
+        print(f"DEBUG: Login successful for user {admin_user.email}. Token generated.")
         response = JSONResponse({"token": token})
         response.set_cookie(
             key="__session", 
@@ -223,9 +224,13 @@ async def login_post(password: str = Form(...), session: AsyncSession = Depends(
 
 
 @app.get("/")
-async def root(request: Request, session: AsyncSession = Depends(get_async_session)):
+async def root(
+    request: Request, 
+    session: AsyncSession = Depends(get_async_session),
+    user_manager = Depends(get_user_manager)
+):
     try:
-        user = await current_active_user_simplified(request, session)
+        user = await current_active_user_simplified(request, session, user_manager)
         token_for_client = await generate_token_for_user(user)
         
         # Generate HTML with injected token
