@@ -78,6 +78,10 @@ async def stream_chat(
     total_output_tokens = 0
 
     try:
+        # Yield an initial space or newline to "prime" the stream and flush buffers.
+        # This helps some proxies (like Firebase) to start streaming immediately.
+        yield ":" + " " * 2048 + "\n\n"
+        
         turn_count = 0
         while True:
             turn_count += 1

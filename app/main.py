@@ -170,8 +170,9 @@ async def chat(
         wrapped_stream(),
         media_type="text/event-stream",
         headers={
-            "Cache-Control": "no-cache",
+            "Cache-Control": "no-cache, no-transform, must-revalidate",
             "X-Accel-Buffering": "no",
+            "X-Content-Type-Options": "nosniff",
         },
     )
 
