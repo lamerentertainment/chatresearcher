@@ -54,7 +54,8 @@ Vorgehen:
 4. Ziehe bei Bedarf `get_law` für den Gesetzestext und `get_commentary` für die Doktrin bei
 5. Verwende `find_citations` oder `find_appeal_chain` für vertiefende Analyse
 6. Fasse die Ergebnisse präzise zusammen und weise auf die relevanten Rechtsfragen hin
-7. Antworte immer auf Deutsch"""
+7. Verlinke nach Möglichkeit auf die gefundenen Urteile unter Verwendung von Markdown-Links (z.B. `[BGer 6B_1234/2025](https://opencaselaw.ch/bger_6B_1234_2025)`). Nutze die `decision_id` aus den Tool-Ergebnissen für die URL-Struktur `https://opencaselaw.ch/<decision_id>`.
+8. Antworte immer auf Deutsch"""
 
 
 async def stream_chat(

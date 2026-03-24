@@ -207,7 +207,6 @@ async def login_post(password: str = Form(...), session: AsyncSession = Depends(
     if password.strip() == ADMIN_PASSWORD:
         admin_user = await get_admin_user(session)
         token = await generate_token_for_user(admin_user)
-        print(f"DEBUG: Login successful for user {admin_user.email}. Token generated.")
         response = JSONResponse({"token": token})
         response.set_cookie(
             key="__session", 
