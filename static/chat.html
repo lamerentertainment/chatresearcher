@@ -206,6 +206,18 @@
   const inputEl    = document.getElementById("input");
   const sendBtn    = document.getElementById("send");
 
+  // Configure marked.js to open links in a new window
+  marked.use({
+    renderer: {
+      link(token) {
+        const href = token.href;
+        const title = token.title;
+        const text = token.text;
+        return `<a href="${href}" ${title ? `title="${title}"` : ''} target="_blank" rel="noopener noreferrer">${text}</a>`;
+      }
+    }
+  });
+
   // Authentication Check
   const token = localStorage.getItem('chatresearcher_token');
 
