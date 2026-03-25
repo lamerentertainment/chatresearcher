@@ -51,6 +51,8 @@ Die App benötigt folgende Variablen in Cloud Run (unter **Variablen & Geheimnis
 | `JWT_SECRET` | Ein langer Zufallsstring für Session-Sicherung | Als **Secret** einbinden |
 | `ALLOWED_FRAME_ANCESTORS` | `https://luch0.sharepoint.com` | Als **Variable** setzen |
 | `SECURE_COOKIES` | `true` (für HTTPS/Produktion) | Als **Variable** setzen |
+| `CLOUD_RUN_URL` | Die URL des Cloud Run Dienstes (z.B. `https://chat-researcher-xxx-ew.a.run.app`) | Als **Variable** setzen |
+| `CORS_ORIGINS` | Kommagetrennte Firebase-Domains (z.B. `https://gen-lang-client-0915148106.web.app,https://gen-lang-client-0915148106.firebaseapp.com`) | Als **Variable** setzen |
 
 #### Einrichten über das Google Cloud Terminal:
 
@@ -68,7 +70,7 @@ echo -n "MEIN_GEHEIMER_STRING" | gcloud secrets versions add JWT_SECRET --data-f
 # 3. Cloud Run Dienst aktualisieren, um Secrets zu nutzen
 gcloud run services update chat-researcher \
   --set-secrets="ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,ADMIN_PASSWORD=ADMIN_PASSWORD:latest,JWT_SECRET=JWT_SECRET:latest" \
-  --set-env-vars="SECURE_COOKIES=true,ALLOWED_FRAME_ANCESTORS=https://luch0.sharepoint.com" \
+  --set-env-vars="SECURE_COOKIES=true,ALLOWED_FRAME_ANCESTORS=https://luch0.sharepoint.com,CLOUD_RUN_URL=$(gcloud run services describe chat-researcher --region europe-west3 --format 'value(status.url)'),CORS_ORIGINS=https://gen-lang-client-0915148106.web.app,https://gen-lang-client-0915148106.firebaseapp.com" \
   --region europe-west3
 ```
 

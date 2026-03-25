@@ -5,10 +5,15 @@ from typing import Optional
 from fastapi import FastAPI, Depends, Request, HTTPException, BackgroundTasks, Form, status
 from fastapi.responses import StreamingResponse, FileResponse, RedirectResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# URL of the Cloud Run service itself (set as env var in Cloud Run).
+# Used so the browser can call /chat directly, bypassing Firebase CDN buffering.
+CLOUD_RUN_URL = os.getenv("CLOUD_RUN_URL", "")
 
 from app.database import init_db
 from app.chat import stream_chat
@@ -34,6 +39,19 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 app = FastAPI(title="Chat Researcher")
+
+# CORS: allow the Firebase Hosting domain to call Cloud Run directly (for SSE streaming).
+# Set CORS_ORIGINS as comma-separated list in Cloud Run env vars,
+# e.g. "https://gen-lang-client-0915148106.web.app,https://gen-lang-client-0915148106.firebaseapp.com"
+_cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
+if _cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_cors_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type"],
+    )
 
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
@@ -240,7 +258,7 @@ async def root(
             
         html_content = html_content.replace(
             "// Authentication Check",
-            f"// Authentication Check\n  const INJECTED_TOKEN = '{token_for_client}';\n  if (INJECTED_TOKEN) localStorage.setItem('chatresearcher_token', INJECTED_TOKEN);"
+            f"// Authentication Check\n  window.BACKEND_URL = '{CLOUD_RUN_URL}';\n  const INJECTED_TOKEN = '{token_for_client}';\n  if (INJECTED_TOKEN) localStorage.setItem('chatresearcher_token', INJECTED_TOKEN);"
         )
         
         response = HTMLResponse(content=html_content)

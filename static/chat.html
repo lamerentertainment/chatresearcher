@@ -586,7 +586,7 @@
       const activeTools = {};
 
       try {
-        const res = await fetch("/chat", {
+        const res = await fetch((window.BACKEND_URL || '') + "/chat", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
