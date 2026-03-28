@@ -1,36 +1,35 @@
 """
 Lädt alle Skills aus dem skills/-Ordner zur Anthropic Skills API hoch.
 
-Jeder Unterordner in skills/ wird zu einem ZIP-Archiv und als Skill
-hochgeladen. Bestehende Skills werden aktualisiert (PUT), neue erstellt (POST).
+Jeder Unterordner in skills/ wird als Skill hochgeladen.
+Bestehende Skills werden aktualisiert, neue erstellt, entfernte gelöscht.
 Die resultierenden Skill-IDs werden in skill_ids.json gespeichert.
 
 Verwendung:
     python deploy_skills.py
 """
-import io
 import json
 import os
 import sys
-import zipfile
 from pathlib import Path
 
-import httpx
+import anthropic
 
 SKILLS_DIR = Path("skills")
 SKILL_IDS_FILE = Path("skill_ids.json")
-API_BASE = "https://api.anthropic.com/v1"
-ANTHROPIC_VERSION = "2023-06-01"
+BETAS = ["skills-2025-10-02"]
 
 
-def build_zip(skill_dir: Path) -> bytes:
-    """Packt den Inhalt eines Skill-Verzeichnisses in ein ZIP."""
-    buf = io.BytesIO()
-    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
-        for file in sorted(skill_dir.rglob("*")):
-            if file.is_file():
-                zf.write(file, file.relative_to(skill_dir))
-    return buf.getvalue()
+def files_from_dir(skill_dir: Path) -> list:
+    """Gibt alle Dateien eines Skill-Verzeichnisses als (name, bytes, mime)-Tuples zurück.
+    Pfade werden mit dem Verzeichnisnamen als Prefix versehen (z.B. 'mein-skill/SKILL.md'),
+    wie von der API gefordert ('common root directory')."""
+    prefix = skill_dir.name
+    return [
+        (f"{prefix}/{f.relative_to(skill_dir)}", f.read_bytes(), "text/plain")
+        for f in sorted(skill_dir.rglob("*"))
+        if f.is_file()
+    ]
 
 
 def load_skill_ids() -> dict:
@@ -44,52 +43,12 @@ def save_skill_ids(ids: dict) -> None:
     SKILL_IDS_FILE.write_text(json.dumps(ids, indent=2, ensure_ascii=False) + "\n")
 
 
-def get_headers(api_key: str) -> dict:
-    return {
-        "x-api-key": api_key,
-        "anthropic-version": ANTHROPIC_VERSION,
-    }
-
-
-def create_skill(api_key: str, zip_bytes: bytes) -> str:
-    """Erstellt einen neuen Skill und gibt die ID zurück."""
-    resp = httpx.post(
-        f"{API_BASE}/skills",
-        headers=get_headers(api_key),
-        files={"file": ("skill.zip", zip_bytes, "application/zip")},
-        timeout=60,
-    )
-    resp.raise_for_status()
-    return resp.json()["id"]
-
-
-def update_skill(api_key: str, skill_id: str, zip_bytes: bytes) -> str:
-    """Aktualisiert einen bestehenden Skill und gibt die ID zurück."""
-    resp = httpx.put(
-        f"{API_BASE}/skills/{skill_id}",
-        headers=get_headers(api_key),
-        files={"file": ("skill.zip", zip_bytes, "application/zip")},
-        timeout=60,
-    )
-    resp.raise_for_status()
-    return resp.json()["id"]
-
-
-def delete_skill(api_key: str, skill_id: str) -> None:
-    """Löscht einen Skill bei Anthropic."""
-    resp = httpx.delete(
-        f"{API_BASE}/skills/{skill_id}",
-        headers=get_headers(api_key),
-        timeout=60,
-    )
-    resp.raise_for_status()
-
-
 def main() -> None:
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
         sys.exit("ERROR: ANTHROPIC_API_KEY nicht gesetzt")
 
+    client = anthropic.Anthropic(api_key=api_key)
     ids = load_skill_ids()
 
     # Gelöschte Skills entfernen (in skill_ids.json vorhanden, aber kein Ordner mehr)
@@ -103,10 +62,16 @@ def main() -> None:
             skill_id = ids[name]
             print(f"  → Lösche Skill: {name} ({skill_id})")
             try:
-                delete_skill(api_key, skill_id)
+                # Zuerst alle Versionen löschen, dann den Skill
+                versions = client.beta.skills.versions.list(skill_id, betas=BETAS)
+                for v in versions.data:
+                    client.beta.skills.versions.delete(skill_id, v.version, betas=BETAS)
+                client.beta.skills.delete(skill_id, betas=BETAS)
                 print(f"    Gelöscht.")
-            except httpx.HTTPStatusError as e:
-                print(f"    FEHLER beim Löschen: {e.response.status_code} – {e.response.text}")
+            except anthropic.NotFoundError:
+                print(f"    War bereits gelöscht.")
+            except anthropic.APIStatusError as e:
+                print(f"    FEHLER beim Löschen: {e.status_code} – {e.message}")
                 sys.exit(1)
             del ids[name]
 
@@ -126,19 +91,37 @@ def main() -> None:
         name = skill_dir.name
         print(f"  → Verarbeite Skill: {name}")
 
-        zip_bytes = build_zip(skill_dir)
-
         existing_id = ids.get(name)
         try:
             if existing_id:
-                skill_id = update_skill(api_key, existing_id, zip_bytes)
-                print(f"    Aktualisiert: {skill_id}")
+                # Neue Version hochladen (= Update des Skills)
+                client.beta.skills.versions.create(
+                    existing_id,
+                    files=files_from_dir(skill_dir),
+                    betas=BETAS,
+                )
+                print(f"    Aktualisiert: {existing_id}")
+                ids[name] = existing_id
             else:
-                skill_id = create_skill(api_key, zip_bytes)
-                print(f"    Erstellt:     {skill_id}")
-            ids[name] = skill_id
-        except httpx.HTTPStatusError as e:
-            print(f"    FEHLER: {e.response.status_code} – {e.response.text}")
+                skill = client.beta.skills.create(
+                    display_title=name,
+                    files=files_from_dir(skill_dir),
+                    betas=BETAS,
+                )
+                print(f"    Erstellt:     {skill.id}")
+                ids[name] = skill.id
+        except anthropic.NotFoundError:
+            # ID in skill_ids.json existiert nicht mehr bei Anthropic → neu anlegen
+            print(f"    Skill-ID ungültig, erstelle neu...")
+            skill = client.beta.skills.create(
+                display_title=name,
+                files=files_from_dir(skill_dir),
+                betas=BETAS,
+            )
+            print(f"    Erstellt:     {skill.id}")
+            ids[name] = skill.id
+        except anthropic.APIStatusError as e:
+            print(f"    FEHLER: {e.status_code} – {e.message}")
             sys.exit(1)
 
     save_skill_ids(ids)

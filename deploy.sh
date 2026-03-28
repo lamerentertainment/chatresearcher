@@ -8,6 +8,11 @@ REGION="europe-west3"
 PROJECT_ID="gen-lang-client-0915148106"
 FIREBASE_DOMAINS="https://${PROJECT_ID}.web.app,https://${PROJECT_ID}.firebaseapp.com"
 
+# ANTHROPIC_API_KEY aus .env laden falls nicht bereits gesetzt
+if [ -z "$ANTHROPIC_API_KEY" ] && [ -f .env ]; then
+  export ANTHROPIC_API_KEY=$(grep '^ANTHROPIC_API_KEY=' .env | cut -d '=' -f2-)
+fi
+
 echo "--- 1. Importiere Präjudizen ---"
 python import_data.py Präjudizen.csv
 

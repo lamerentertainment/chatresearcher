@@ -87,6 +87,7 @@ async def stream_chat(
         yield ":" + " " * 4096 + "\n\n"
         
         skill_ids = get_skill_ids()
+        code_execution_tool = {"type": "code_execution_20250825", "name": "code_execution"}
 
         turn_count = 0
         while True:
@@ -96,10 +97,15 @@ async def stream_chat(
                     model="claude-haiku-4-5",
                     max_tokens=4096,
                     system=SYSTEM_PROMPT,
-                    tools=TOOL_DEFINITIONS,
+                    tools=TOOL_DEFINITIONS + [code_execution_tool],
                     messages=messages,
-                    betas=["files-api-2025-04-14"],
-                    container={"type": "auto", "skill_ids": skill_ids},
+                    betas=["skills-2025-10-02", "code-execution-2025-08-25"],
+                    container={
+                        "skills": [
+                            {"type": "custom", "skill_id": sid, "version": "latest"}
+                            for sid in skill_ids
+                        ]
+                    },
                 )
             else:
                 stream_cm = client.messages.stream(
