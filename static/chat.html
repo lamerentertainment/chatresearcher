@@ -203,6 +203,33 @@
       background: #d6f5e1;
     }
 
+    .skill-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f3f0ff;
+      border: 1px solid #c4b5fd;
+      color: #6d28d9;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin: 4px 0;
+      cursor: default;
+      user-select: none;
+    }
+
+    .skill-pill.done {
+      background: #ede9fe;
+      border-color: #a78bfa;
+      color: #5b21b6;
+    }
+
+    .skill-pill svg {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+    }
+
     .tool-detail {
       display: none;
       background: #fff;
@@ -529,6 +556,27 @@
       search_opencaselaw: "OpenCaseLaw",
     };
 
+    const SKILL_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`;
+
+    function addSkillPill(name, insertBeforeEl) {
+      const wrap = document.createElement("div");
+      wrap.className = "tool-wrap";
+
+      const pill = document.createElement("div");
+      pill.className = "skill-pill";
+      const label = name && name !== "code_execution_20250522" ? name : "Skill";
+      pill.innerHTML = SKILL_ICON + `<span>${escHtml(label)}</span>` + `<span class="spinner" style="border-color:#c4b5fd;border-top-color:#6d28d9"></span>`;
+      wrap.appendChild(pill);
+
+      if (insertBeforeEl) {
+        messagesEl.insertBefore(wrap, insertBeforeEl);
+      } else {
+        messagesEl.appendChild(wrap);
+      }
+      scrollBottom();
+      return pill;
+    }
+
     function addToolWrap(name, toolInput, insertBeforeEl) {
       const wrap = document.createElement("div");
       wrap.className = "tool-wrap";
@@ -584,6 +632,8 @@
 
       // Track active tool wraps (name -> {pill, detail})
       const activeTools = {};
+      // Track active skill pills (index -> pill element)
+      const activeSkills = {};
 
       try {
         const res = await fetch((window.BACKEND_URL || '') + "/chat", {
@@ -625,6 +675,19 @@
               assistantText += evt.content;
               bubble.innerHTML = marked.parse(assistantText);
               scrollBottom();
+
+            } else if (evt.type === "skill_event") {
+              if (evt.action === "start") {
+                const pill = addSkillPill(evt.name, assistantMsgDiv);
+                activeSkills[evt.index] = pill;
+              } else if (evt.action === "done") {
+                const pill = activeSkills[evt.index];
+                if (pill) {
+                  pill.classList.add("done");
+                  pill.querySelector(".spinner")?.remove();
+                  delete activeSkills[evt.index];
+                }
+              }
 
             } else if (evt.type === "tool_start") {
               const toolWrap = addToolWrap(evt.name, evt.input || {}, assistantMsgDiv);

@@ -10,7 +10,6 @@ Events emitted (JSON, one per SSE data line):
   {"type": "error",       "content": "..."}   – something went wrong
 """
 import json
-import os
 from typing import AsyncGenerator
 
 import anthropic
@@ -111,13 +110,33 @@ async def stream_chat(
                     messages=messages,
                 )
             async with stream_cm as stream:
-                # Stream text deltas to the client
                 first_delta_in_turn = True
-                async for text in stream.text_stream:
-                    if turn_count > 1 and first_delta_in_turn:
-                        yield _sse({"type": "text", "content": "\n\n"})
-                        first_delta_in_turn = False
-                    yield _sse({"type": "text", "content": text})
+                active_skill_indices: set[int] = set()
+
+                async for event in stream:
+                    if event.type == "content_block_start":
+                        block_type = getattr(event.content_block, "type", "")
+                        if block_type not in ("text", "tool_use", "thinking", "redacted_thinking"):
+                            active_skill_indices.add(event.index)
+                            yield _sse({
+                                "type": "skill_event",
+                                "action": "start",
+                                "index": event.index,
+                                "block_type": block_type,
+                                "name": getattr(event.content_block, "name", block_type),
+                            })
+
+                    elif event.type == "content_block_delta":
+                        if event.delta.type == "text_delta":
+                            if turn_count > 1 and first_delta_in_turn:
+                                yield _sse({"type": "text", "content": "\n\n"})
+                            first_delta_in_turn = False
+                            yield _sse({"type": "text", "content": event.delta.text})
+
+                    elif event.type == "content_block_stop":
+                        if event.index in active_skill_indices:
+                            active_skill_indices.discard(event.index)
+                            yield _sse({"type": "skill_event", "action": "done", "index": event.index})
 
                 final = await stream.get_final_message()
 
