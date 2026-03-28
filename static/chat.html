@@ -230,6 +230,11 @@
       flex-shrink: 0;
     }
 
+    .skill-file {
+      opacity: 0.65;
+      font-size: 11px;
+    }
+
     .tool-detail {
       display: none;
       background: #fff;
@@ -558,14 +563,21 @@
 
     const SKILL_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`;
 
-    function addSkillPill(name, insertBeforeEl) {
+    function addSkillPill(skills, files, insertBeforeEl) {
       const wrap = document.createElement("div");
       wrap.className = "tool-wrap";
 
       const pill = document.createElement("div");
       pill.className = "skill-pill";
-      const label = name && name !== "code_execution_20250522" ? name : "Skill";
-      pill.innerHTML = SKILL_ICON + `<span>${escHtml(label)}</span>` + `<span class="spinner" style="border-color:#c4b5fd;border-top-color:#6d28d9"></span>`;
+
+      const skillLabel = (skills && skills.length) ? skills.join(", ") : "Skill";
+      const fileHtml = (files && files.length)
+        ? ` <span class="skill-file">• ${escHtml(files[0])}</span>` : "";
+
+      pill.innerHTML = SKILL_ICON
+        + `<span>${escHtml(skillLabel)}</span>`
+        + fileHtml
+        + `<span class="spinner" style="border-color:#c4b5fd;border-top-color:#6d28d9"></span>`;
       wrap.appendChild(pill);
 
       if (insertBeforeEl) {
@@ -678,7 +690,7 @@
 
             } else if (evt.type === "skill_event") {
               if (evt.action === "start") {
-                const pill = addSkillPill(evt.name, assistantMsgDiv);
+                const pill = addSkillPill(evt.skills, evt.files, assistantMsgDiv);
                 activeSkills[evt.index] = pill;
               } else if (evt.action === "done") {
                 const pill = activeSkills[evt.index];

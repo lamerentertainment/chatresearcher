@@ -1,5 +1,5 @@
 ---
-name: textbaustein-opencaselaw
+name: textbausteine-erstellen
 description: Erstelle gerichtskonforme Textbausteine zur abstrakten Rechtslage (Tatbestand + Rechtsprechung) nach selbständiger Recherche via OpenCaseLaw MCP. Verwende für Anfragen wie "Textbaustein zu Art. X StGB", "Rechtslage zu ...", "Erstelle einen Baustein zu ...".
 ---
 

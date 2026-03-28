@@ -10,12 +10,13 @@ Events emitted (JSON, one per SSE data line):
   {"type": "error",       "content": "..."}   – something went wrong
 """
 import json
+import re
 from typing import AsyncGenerator
 
 import anthropic
 from dotenv import load_dotenv
 
-from app.skills_config import get_skill_ids
+from app.skills_config import get_skill_ids, get_skill_names
 from app.tools import TOOL_DEFINITIONS, execute_tool
 
 load_dotenv()
@@ -87,6 +88,7 @@ async def stream_chat(
         yield ":" + " " * 4096 + "\n\n"
         
         skill_ids = get_skill_ids()
+        skill_names = get_skill_names()
         code_execution_tool = {"type": "code_execution_20250825", "name": "code_execution"}
 
         turn_count = 0
@@ -118,18 +120,31 @@ async def stream_chat(
             async with stream_cm as stream:
                 first_delta_in_turn = True
                 active_skill_indices: set[int] = set()
+                # Accumulate code_execution input to extract skill file references
+                code_exec_buffer: dict[int, str] = {}
 
                 async for event in stream:
                     if event.type == "content_block_start":
                         block_type = getattr(event.content_block, "type", "")
-                        if block_type not in ("text", "tool_use", "thinking", "redacted_thinking"):
+                        name = getattr(event.content_block, "name", "")
+
+                        if block_type == "tool_use" and name == "code_execution":
+                            # Akkumuliere Input, um später Skill-Dateien zu erkennen
+                            code_exec_buffer[event.index] = ""
+
+                        elif block_type not in ("text", "tool_use", "thinking", "redacted_thinking"):
+                            # z.B. bash_code_execution_tool_result → Skill läuft gerade
                             active_skill_indices.add(event.index)
+                            # Extrahiere /skills/<name>/<datei> aus akkumuliertem Code
+                            code = next(iter(code_exec_buffer.values()), "")
+                            matches = re.findall(r"/skills/([^/'\"\\\s]+)/([^'\"\)\\\s]+)", code)
+                            files = [f"{s}/{f}" for s, f in matches] if matches else []
                             yield _sse({
                                 "type": "skill_event",
                                 "action": "start",
                                 "index": event.index,
-                                "block_type": block_type,
-                                "name": getattr(event.content_block, "name", block_type),
+                                "skills": skill_names,
+                                "files": files,
                             })
 
                     elif event.type == "content_block_delta":
@@ -138,8 +153,11 @@ async def stream_chat(
                                 yield _sse({"type": "text", "content": "\n\n"})
                             first_delta_in_turn = False
                             yield _sse({"type": "text", "content": event.delta.text})
+                        elif event.index in code_exec_buffer:
+                            code_exec_buffer[event.index] += getattr(event.delta, "partial_json", "")
 
                     elif event.type == "content_block_stop":
+                        code_exec_buffer.pop(event.index, None)
                         if event.index in active_skill_indices:
                             active_skill_indices.discard(event.index)
                             yield _sse({"type": "skill_event", "action": "done", "index": event.index})

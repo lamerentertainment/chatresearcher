@@ -15,6 +15,15 @@ def get_skill_ids() -> list[str]:
         return []
 
 
+def get_skill_names() -> list[str]:
+    """Gibt alle Skill-Ordnernamen zurück (entspricht dem skill name in SKILL.md)."""
+    try:
+        data = json.loads(_SKILL_IDS_PATH.read_text())
+        return list(data.keys())
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+
 def get_skill_id(name: str) -> Optional[str]:
     """Gibt die ID eines bestimmten Skills zurück."""
     try:
