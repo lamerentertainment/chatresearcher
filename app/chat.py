@@ -16,6 +16,7 @@ from typing import AsyncGenerator
 import anthropic
 from dotenv import load_dotenv
 
+from app.skills_config import get_skill_ids
 from app.tools import TOOL_DEFINITIONS, execute_tool
 
 load_dotenv()
@@ -86,16 +87,30 @@ async def stream_chat(
         # 4096 bytes is a common buffer size for many enterprise proxies.
         yield ":" + " " * 4096 + "\n\n"
         
+        skill_ids = get_skill_ids()
+
         turn_count = 0
         while True:
             turn_count += 1
-            async with client.messages.stream(
-                model="claude-haiku-4-5",
-                max_tokens=4096,
-                system=SYSTEM_PROMPT,
-                tools=TOOL_DEFINITIONS,
-                messages=messages,
-            ) as stream:
+            if skill_ids:
+                stream_cm = client.beta.messages.stream(
+                    model="claude-haiku-4-5",
+                    max_tokens=4096,
+                    system=SYSTEM_PROMPT,
+                    tools=TOOL_DEFINITIONS,
+                    messages=messages,
+                    betas=["files-api-2025-04-14"],
+                    container={"type": "auto", "skill_ids": skill_ids},
+                )
+            else:
+                stream_cm = client.messages.stream(
+                    model="claude-haiku-4-5",
+                    max_tokens=4096,
+                    system=SYSTEM_PROMPT,
+                    tools=TOOL_DEFINITIONS,
+                    messages=messages,
+                )
+            async with stream_cm as stream:
                 # Stream text deltas to the client
                 first_delta_in_turn = True
                 async for text in stream.text_stream:

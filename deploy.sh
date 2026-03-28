@@ -11,6 +11,9 @@ FIREBASE_DOMAINS="https://${PROJECT_ID}.web.app,https://${PROJECT_ID}.firebaseap
 echo "--- 1. Importiere Präjudizen ---"
 python import_data.py Präjudizen.csv
 
+echo "--- 1b. Skills zur Anthropic API hochladen ---"
+python deploy_skills.py
+
 echo "--- 2. Backend Deployment (Cloud Run) ---"
 gcloud run deploy $SERVICE \
     --source . \
