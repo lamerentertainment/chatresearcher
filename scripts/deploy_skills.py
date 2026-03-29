@@ -6,7 +6,7 @@ Bestehende Skills werden aktualisiert, neue erstellt, entfernte gelöscht.
 Die resultierenden Skill-IDs werden in skill_ids.json gespeichert.
 
 Verwendung:
-    python deploy_skills.py
+    python3 scripts/deploy_skills.py
 """
 import json
 import os

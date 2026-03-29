@@ -15,4 +15,4 @@ EXPOSE 8080
 
 # Befehl zum Starten: Daten importieren und dann FastAPI starten
 # Cloud Run setzt die PORT Umgebungsvariable automatisch
-CMD ["sh", "-c", "python import_data.py Präjudizen.csv && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
+CMD ["sh", "-c", "PYTHONPATH=. python3 scripts/import_data.py Präjudizen.csv && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]

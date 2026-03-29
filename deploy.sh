@@ -14,13 +14,13 @@ if [ -z "$ANTHROPIC_API_KEY" ] && [ -f .env ]; then
 fi
 
 echo "--- 1. Importiere Präjudizen ---"
-python import_data.py Präjudizen.csv
+PYTHONPATH=. python3 scripts/import_data.py Präjudizen.csv
 
 echo "--- 1b. Rechtliche Textbausteine aktualisieren ---"
 python3 scripts/split_docx_to_md.py ./TB-Strafrecht.docx ./skills/textbausteine-erstellen/resources/
 
 echo "--- 1c. Skills zur Anthropic API hochladen ---"
-python deploy_skills.py
+python3 scripts/deploy_skills.py
 
 echo "--- 2. Backend Deployment (Cloud Run) ---"
 gcloud run deploy $SERVICE \

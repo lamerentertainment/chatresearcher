@@ -11,7 +11,7 @@ source .venv/bin/activate
 ## 2. (Optional) Daten importieren
 Falls die SQLite-Datenbank noch nicht existiert oder du die Daten neu einlesen möchtest:
 ```bash
-python import_data.py Präjudizen.csv
+PYTHONPATH=. python3 scripts/import_data.py Präjudizen.csv
 ```
 
 ## 3. Server starten

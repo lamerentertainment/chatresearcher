@@ -6,7 +6,7 @@ Du kannst das gesamte Deployment (Datenimport + Backend + Frontend) mit einem ei
 ./deploy.sh
 ```
 
-Dies führt automatisch `import_data.py` aus und lädt anschließend beide Teile der App hoch.
+Dies führt automatisch die Scripte im `scripts/` Ordner (z.B. `import_data.py` und `deploy_skills.py`) aus und lädt anschließend beide Teile der App hoch.
 
 ## 1. Voraussetzungen
 

@@ -1,6 +1,6 @@
 """
 Import Präjudizen CSV into SQLite database.
-Usage: python import_data.py <path-to-csv>
+Usage: PYTHONPATH=. python scripts/import_data.py <path-to-csv>
 """
 import csv
 import sys
@@ -47,6 +47,6 @@ def import_csv(filepath: str):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python import_data.py <path-to-csv>")
+        print("Usage: PYTHONPATH=. python scripts/import_data.py <path-to-csv>")
         sys.exit(1)
     import_csv(sys.argv[1])
