@@ -19,6 +19,9 @@ python import_data.py Präjudizen.csv
 echo "--- 1b. Skills zur Anthropic API hochladen ---"
 python deploy_skills.py
 
+echo "--- 1c. Rechtliche Textbausteine aktualisieren ---"
+python3 scripts/split_docx_to_md.py ./TB-Strafrecht.docx ./skills/textbausteine-erstellen/resources/
+
 echo "--- 2. Backend Deployment (Cloud Run) ---"
 gcloud run deploy $SERVICE \
     --source . \
