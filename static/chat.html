@@ -391,6 +391,7 @@
     #send:hover:not(:disabled) {
       background: #2c2c4e;
     }
+
     /* Modal styles */
     #modal-overlay {
       display: none;
@@ -421,6 +422,7 @@
         transform: scale(0.95);
         opacity: 0;
       }
+
       to {
         transform: scale(1);
         opacity: 1;
@@ -482,7 +484,8 @@
   <div id="modal-overlay">
     <div id="modal">
       <h3>Chat leeren?</h3>
-      <p>Möchten Sie den aktuellen Chat wirklich leeren und einen neuen beginnen? Der bisherige Verlauf wird gelöscht.</p>
+      <p>Möchten Sie den aktuellen Chat wirklich leeren und einen neuen beginnen? Der bisherige Verlauf wird gelöscht.
+      </p>
       <div class="modal-buttons">
         <button class="modal-btn cancel" id="modal-cancel">Abbrechen</button>
         <button class="modal-btn confirm" id="modal-confirm">Neuer Chat</button>
@@ -496,7 +499,8 @@
       <span>KRG Präjudizen + OpenCaseLaw</span>
     </div>
     <button id="new-chat" type="button" title="Neuen Chat beginnen">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
         <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
         <path d="M21 3v5h-5"></path>
         <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
@@ -699,9 +703,9 @@
 
       const pill = document.createElement("div");
       pill.className = "thinking-pill";
-      
+
       const icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
-      
+
       pill.innerHTML = icon + `<span>Denkt nach…</span><span class="spinner" style="border-color:#fbcfe8;border-top-color:#be185d"></span>`;
       wrap.appendChild(pill);
 
@@ -861,7 +865,7 @@
                 }
                 if (evt.input) {
                   toolWrap.detail.querySelector(".query-body").textContent = typeof evt.input === "string" ? evt.input : JSON.stringify(evt.input, null, 2);
-                  
+
                   let pillLabel = toolWrap.pill.querySelector(".pill-label");
                   let baseLabel = TOOL_LABELS[toolWrap.name] || toolWrap.name;
                   if (toolWrap.name === "bash_code_execution" || toolWrap.name === "bash") {
@@ -942,11 +946,14 @@
     const welcomeText = `Guten Tag! Ich bin Ihr juristischer Rechercheassistent für Schweizer Strafrecht. Ich kann Sie bei folgenden Aufgaben unterstützen:
 
 - **Lokale Datenbank:** Suche nach internen Präjudizen des Kriminalgerichts Luzern.
-- **OpenCaseLaw:** Recherche in über 956'000 Entscheiden, inklusive Leitentscheiden und Zitationsanalysen.
+- **OpenCaseLaw:** Recherche in über 956'000 schweizerischen Entscheiden, inklusive Leitentscheiden und Zitationsanalysen.
 - **Gesetze:** Abruf von Artikeln aus StGB, StPO, BV, OR und weiteren Bundesgesetzen.
 - **Doktrin & Kommentare:** Zugriff auf wissenschaftliche Kommentare (OnlineKommentar.ch) und dogmatische Analysen.
 
-Wie kann ich Ihnen heute bei Ihrer Recherche helfen?`;
+Ich habe die **besondere Fähigkeit** (skill), basierend auf der aktuellen Rechtsprechung den KRG-Redaktionsrichtlinien entsprechende 
+**Textbausteine** zu erstellen. Fordere mich auf, indem du mir zum Beispiel sagst: "Erstelle einen Textbaustein für den objektiven Tatbestand der Sachbeschädigung gemäss Art. 144 StGB". 
+
+Wie kann ich Ihnen heute bei Ihrer Recherchearbeit helfen?`;
 
     const welcomeBubble = addMessage("assistant", "");
     welcomeBubble.innerHTML = marked.parse(welcomeText);
