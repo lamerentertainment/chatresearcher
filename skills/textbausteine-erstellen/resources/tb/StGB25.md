@@ -1,0 +1,6 @@
+StGB25	Gehilfenschaft
+
+#Beginn StGB25 Gehilfenschaft#Gehilfe  im Sinne von Art. 25 StGB ist, wer zu einem Verbrechen oder Vergehen vorsätzlich Hilfe leistet, die Tat jedoch nur durch einen untergeordneten Tatbeitrag unterstützt. Nach der Rechtsprechung gilt als Hilfeleistung jeder kausale Beitrag, der die Tat fördert, sodass sich diese ohne Mitwirkung des Gehilfen anders abgespielt hätte. Die Hilfeleistung muss tatsächlich zur Tat beitragen und die Erfolgschancen der tatbestandserfüllenden Handlung erhöhen. Nicht erforderlich ist, dass es ohne die Beihilfe nicht zur Tat gekommen wäre (BGE 132 IV 49 E. 1.1; 129 IV 124 E. 3.2; 128 IV 53 E. 5f/cc; BGer-Urteil 6B_1437/2020 vom 22.09.2021 E.  1.2.3 mit Hinweisen).
+Art. 25 StGB erfordert subjektiv, dass der Gehilfe weiss oder damit rechnet, eine bestimmt geartete Straftat zu unterstützen, und dass er dies will oder in Kauf nimmt. Es genügt, wenn der Gehilfe den Geschehensablauf voraussieht, d.h. die wesentlichen Merkmale des vom Täter zu verwirklichenden strafbaren Tuns erkennt. Einzelheiten der Tat braucht er hingegen nicht zu kennen (BGE 132 IV 49 E. 1.1; 128 IV 53 E. 5f/cc; BGer-Urteile 6B_1437/2020 vom 22.09.2021 E. 1.2.3; 6B_224/2017 vom 17. 11.2017 E. 3.2.2; je mit Hinweisen ).#Ende StGB25#
+
+hinzugefügt am 2.2.23

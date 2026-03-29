@@ -1,0 +1,4 @@
+StPO10	d Indizienbeweis
+
+#Beginn StPO10 d Indizienbeweis#Liegen keine direkten Beweise vor, ist nach der Rechtsprechung auch ein indirekter Beweis  mittels Indizien  zulässig. Beim Indizienbeweis wird aus bestimmten Tatsachen, die nicht unmittelbar rechtserheblich, aber bewiesen sind (Indizien), auf die zu beweisende, unmittelbar rechtserhebliche Tatsache geschlossen. Eine Mehrzahl von Indizien, welche für sich alleine nur mit einer gewissen Wahrscheinlichkeit auf die Täterschaft oder die Tat hinweisen und einzeln betrachtet die Mö glichkeit des Andersseins offen lassen, können einen Anfangsverdacht verstärken und in ihrer Gesamtheit ein Bild erzeugen, das bei objektiver Betrachtung keine Zweifel bestehen lässt, dass sich der Sachverhalt so verwirklicht hat ( BGer-Urteile 6B_678/20 1 3 vom 3.2.2014 E. 3.3 , 6B_217/2012 vom 20.7.2012 E.   2.2. 2,  6B_1047/2010 vom 28.2.2011 E. 4.2, 6B_ 781/2010 vom 13.12.2010 E. 3.2 mit weiteren Hinweisen).#Ende StPO10#
+

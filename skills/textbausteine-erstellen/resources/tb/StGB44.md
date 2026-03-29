@@ -1,0 +1,4 @@
+StGB44	Probezeit
+
+#Beginn StGB44 Probezeit#Schiebt  das Gericht den Vollzug einer Strafe ganz oder teilweise auf, so bestimmt es dem Verurteilten eine Probezeit von zwei bis fünf Jahren (Art. 44 Abs. 1 StGB). Die Bemessung der Probezeit richtet sich innerhalb des gesetzlichen Rahmens nach den Umständen des Einzelfalls, insbesondere nach der Persönlichkeit und dem Charakter des Verurteilten sowie der Rückfallgefahr. Je grösser diese Gefahr ist, desto länger muss die Probezeit sein, damit der Verurteilte von weiteren Delikten abgehalten wird. Die Dauer der Probezeit muss mit anderen Worten so festgelegt werden, dass sie die grösste Wahrscheinlichkeit zur Verhinderung eines Rückfalls bietet. Die Behörden verfügen in diesem Zusammenhang über einen weiten Ermessensspielraum (BGer-Urteil 6B_1133/2019 vom 18.12.2019 E. 4.3). Das Gericht erklärt dem Verurteilten die Bedeutung und die Folgen der bedingten und der teilbedingten Strafe (Art. 44 Abs. 3 StGB ).#Ende StGB44#
+

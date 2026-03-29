@@ -1,0 +1,7 @@
+StGB164	Gläubigerschädigung durch Vermögensminderung
+
+#Beginn StGB164 Gläubigerschädigung durch Vermögensminderung#D er  Gläubigerschädigung durch Vermögensminderung macht sich jener Schuldner strafbar, der zum Schaden der Gläubiger sein Vermögen vermindert, indem er  unter anderem  Vermögenswerte unentgeltlich  oder gegen eine Leistung  mit offensichtlich geringeren Wert   veräussert,  und über ihn der Konkurs eröffnet oder gegen ihn ein Verlustschein ausgestellt worden ist.   Unter diese Tathandlungsvariante fallen grundsätzlich sämtliche Handlungen, mit denen ein Vermögenswert des Schuldners in das Eigentum eines Dritten übergeht  ( BGE 118 III 18  E.  3a;  Hagenstein,  BSK StGB, 4. Aufl. ,  19  zu Art. 163).
+In subjektiver Hinsicht  wird  Vorsatz  verlangt , wobei Eventualvorsatz genügt. Dieser muss sich auf sämtliche objektiven Tatbestandsmerkmale beziehen, insbesondere auch auf die Gläubigerschädigung. Der Täter muss im Bewusstsein des drohenden Vermögenszusammenbruchs handeln, um die mögliche Gefährdung der Zugriffsrechte der Gläubiger wissen und sie zumindest als Erfolg in Kauf nehmen (Hagenstein,  a.a.O. , N   33 ff. zu Art.  164).
+Erfüllt ein Täter gleichzeitig den Tatbestand der ungetreuen Geschäftsbesorgung sowie den Tatbestand der Gläubigerschädigung durch Vermögensminderung, kommen laut  der bundesgerichtlichen Rechtsprechung infolge unterschiedlich betroffener Rechtsgüter  beide Bestimmungen zur Anwendung  (BGE 117 IV 259  E.  6; BGer-Urteil  6B_778/2011  vom 03.04.2012  E.  3.3)#Ende StGB164#
+
+hinzugefügt am 26.1.23

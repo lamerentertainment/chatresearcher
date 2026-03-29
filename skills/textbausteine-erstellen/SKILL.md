@@ -13,6 +13,19 @@ Dieser Skill leitet Claude an, auf Anfrage selbständig via **OpenCaseLaw MCP** 
 
 ## 1. Arbeitsablauf
 
+### Schritt 0 – Bestehende Textbausteine prüfen
+
+Bevor Claude mit der Recherche beginnt, liest er **zuerst die Indexdatei** `skills/textbausteine-erstellen/resources/tb/index.md`. Diese Datei listet alle verfügbaren Textbausteine mit Kürzel, Titel und Dateiname auf und ist der schnellste Weg zu prüfen, ob ein Baustein bereits existiert.
+
+1. **Existiert bereits ein Baustein** für den angefragten Artikel? Index prüfen, dann:
+   - Den bestehenden Baustein dem Benutzer vorlegen (Datei lesen und Inhalt zeigen).
+   - Fragen, ob er aktualisiert, ergänzt oder ein neuer Baustein daneben erstellt werden soll.
+   - Keinen neuen Baustein erstellen, ohne dies zu klären.
+
+2. **Bestehende Bausteine als Vorlage nutzen**: Claude liest 1–2 thematisch verwandte Bausteine aus dem Index (gleicher Gesetzesabschnitt, ähnliche Struktur), um Stil, Detailtiefe und Aufbau konsistent zu halten.
+
+Die Dateinamen folgen dem Schema `[Gesetz][Artikel][Suffix].md` (z.B. `StGB146.md`, `StGB146a.md`, `StGB146b.md`). Varianten eines Artikels (Absätze, Qualifikationen) werden als separate Dateien mit Suffix angelegt. **Nach dem Erstellen eines neuen Bausteins ist der Index zu aktualisieren.**
+
 ### Schritt 1 – Recherche (ohne Rückfrage sofort starten)
 
 Claude wählt die OpenCaseLaw-Tools nach Fragestellung:

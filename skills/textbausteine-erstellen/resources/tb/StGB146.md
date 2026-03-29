@@ -1,0 +1,4 @@
+StGB146	d Gewerbsmässigkeit
+
+#Beginn StGB146 d Gewerbsmässigkeit#Gewerbsmässigkeit  im Sinne von Art.   146 Abs.   2 StGB ist gegeben, wenn sich aus der Zeit und den Mitteln, die der Täter für die deliktische Tätigkeit aufwendet, aus der Häufigkeit der Einzelakte innerhalb eines bestimmten Zeitraums sowie aus den angestrebten und erzielten Einkünften ergibt, dass er die deliktische Tätigkeit nach der Art eines Berufs ausübt, wobei eine quasi "nebenberufliche" deliktische Tätigkeit genügt. Gewerbsmässigkeit setzt demnach voraus, dass der Täter erstens die Tat bereits mehrfach beging, zweitens in der Absicht handelte, ein Erwerbseinkommen zu erlangen und drittens aufgrund seiner Taten geschlossen werden muss, er sei zu einer Vielzahl von unter den fraglichen Tatbestand fallenden Handlungen bereit gewesen (BGE 123 IV 113 E.   2c; 119 IV 129 E.   3a;  BGer- Urteil 6B_ 1033/2021 vom 12.10. 2022 E.   2.1  m.w.H . ).#Ende StGB146#
+
