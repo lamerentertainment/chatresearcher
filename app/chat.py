@@ -94,11 +94,14 @@ async def stream_chat(
         turn_count = 0
         while True:
             turn_count += 1
+            if turn_count > 1:
+                yield _sse({"type": "status", "text": "Verarbeite Zwischenergebnisse…"})
             if skill_ids:
                 stream_cm = client.beta.messages.stream(
                     model="claude-haiku-4-5",
-                    max_tokens=4096,
+                    max_tokens=8192,
                     system=SYSTEM_PROMPT,
+                    thinking={"type": "enabled", "budget_tokens": 4096},
                     tools=TOOL_DEFINITIONS + [code_execution_tool],
                     messages=messages,
                     betas=["skills-2025-10-02", "code-execution-2025-08-25"],
@@ -112,39 +115,74 @@ async def stream_chat(
             else:
                 stream_cm = client.messages.stream(
                     model="claude-haiku-4-5",
-                    max_tokens=4096,
+                    max_tokens=8192,
                     system=SYSTEM_PROMPT,
                     tools=TOOL_DEFINITIONS,
                     messages=messages,
+                    thinking={"type": "enabled", "budget_tokens": 4096},
                 )
             async with stream_cm as stream:
                 first_delta_in_turn = True
-                active_skill_indices: set[int] = set()
-                # Accumulate code_execution input to extract skill file references
+                # server_tool_use id → block index (für code_execution)
+                server_tool_id_to_index: dict[str, int] = {}
+                # result block index → skill block index
+                result_to_skill: dict[int, int] = {}
+                # code_exec block index → accumulated code JSON
                 code_exec_buffer: dict[int, str] = {}
+                # skill block indices still awaiting done
+                active_skill_indices: set[int] = set()
 
                 async for event in stream:
                     if event.type == "content_block_start":
                         block_type = getattr(event.content_block, "type", "")
-                        name = getattr(event.content_block, "name", "")
+                        block_name = getattr(event.content_block, "name", "")
+                        block_id   = getattr(event.content_block, "id", "")
+                        tool_use_id = getattr(event.content_block, "tool_use_id", "")
 
-                        if block_type == "tool_use" and name == "code_execution":
-                            # Akkumuliere Input, um später Skill-Dateien zu erkennen
+                        if block_type in ("server_tool_use", "tool_use") and block_name == "code_execution":
+                            # Skill startet: Code wird an den Container geschickt
                             code_exec_buffer[event.index] = ""
-
-                        elif block_type not in ("text", "tool_use", "thinking", "redacted_thinking"):
-                            # z.B. bash_code_execution_tool_result → Skill läuft gerade
+                            if block_id:
+                                server_tool_id_to_index[block_id] = event.index
                             active_skill_indices.add(event.index)
-                            # Extrahiere /skills/<name>/<datei> aus akkumuliertem Code
-                            code = next(iter(code_exec_buffer.values()), "")
-                            matches = re.findall(r"/skills/([^/'\"\\\s]+)/([^'\"\)\\\s]+)", code)
-                            files = [f"{s}/{f}" for s, f in matches] if matches else []
                             yield _sse({
                                 "type": "skill_event",
                                 "action": "start",
                                 "index": event.index,
                                 "skills": skill_names,
-                                "files": files,
+                                "files": [],
+                            })
+                        elif block_type in ("server_tool_use", "tool_use"):
+                            # Normales Tool startet
+                            yield _sse({
+                                "type": "tool_start",
+                                "name": block_name,
+                                "index": event.index
+                            })
+                        elif block_type == "thinking":
+                            yield _sse({
+                                "type": "thinking_start",
+                                "index": event.index
+                            })
+
+                        elif block_type == "bash_code_execution_tool_result":
+                            # Ergebnis eines code_execution-Calls → skill_idx ermitteln
+                            skill_idx = server_tool_id_to_index.get(tool_use_id, None)
+                            if skill_idx is not None:
+                                result_to_skill[event.index] = skill_idx
+
+                        elif block_type not in (
+                            "text", "tool_use", "server_tool_use",
+                            "thinking", "redacted_thinking", "bash_code_execution_tool_result",
+                        ):
+                            # Unbekannter nicht-text Block als Fallback
+                            active_skill_indices.add(event.index)
+                            yield _sse({
+                                "type": "skill_event",
+                                "action": "start",
+                                "index": event.index,
+                                "skills": skill_names,
+                                "files": [],
                             })
 
                     elif event.type == "content_block_delta":
@@ -155,12 +193,45 @@ async def stream_chat(
                             yield _sse({"type": "text", "content": event.delta.text})
                         elif event.index in code_exec_buffer:
                             code_exec_buffer[event.index] += getattr(event.delta, "partial_json", "")
+                        elif event.delta.type == "input_json_delta":
+                            yield _sse({
+                                "type": "tool_input_delta",
+                                "index": event.index,
+                                "delta": getattr(event.delta, "partial_json", "")
+                            })
+                        elif event.delta.type == "thinking_delta":
+                            yield _sse({
+                                "type": "thinking_delta",
+                                "index": event.index,
+                                "delta": getattr(event.delta, "thinking", "")
+                            })
 
                     elif event.type == "content_block_stop":
-                        code_exec_buffer.pop(event.index, None)
-                        if event.index in active_skill_indices:
-                            active_skill_indices.discard(event.index)
-                            yield _sse({"type": "skill_event", "action": "done", "index": event.index})
+                        if event.index in result_to_skill:
+                            # Ergebnis-Block fertig → Skill abgeschlossen
+                            skill_idx = result_to_skill.pop(event.index)
+                            code = code_exec_buffer.pop(skill_idx, "")
+                            matches = re.findall(r"/skills/([^/'\"\\\s]+)/([^'\"\)\\\s]+)", code)
+                            files = [f"{s}/{f}" for s, f in matches]
+                            active_skill_indices.discard(skill_idx)
+                            yield _sse({
+                                "type": "skill_event",
+                                "action": "done",
+                                "index": skill_idx,
+                                "files": files,
+                            })
+                        elif event.index in active_skill_indices:
+                            # server_tool_use block gestoppt, aber Ergebnis-Block folgt noch
+                            # Pill bleibt mit Spinner, bis result_to_skill für diesen Index done auslöst.
+                            # Falls kein Ergebnis-Block erwartet wird (kein Eintrag in result_to_skill),
+                            # sofort als done markieren.
+                            expected = event.index in server_tool_id_to_index.values()
+                            if not expected:
+                                active_skill_indices.discard(event.index)
+                                code_exec_buffer.pop(event.index, None)
+                                yield _sse({"type": "skill_event", "action": "done", "index": event.index})
+                        else:
+                            code_exec_buffer.pop(event.index, None)
 
                 final = await stream.get_final_message()
 
@@ -175,15 +246,19 @@ async def stream_chat(
 
             # Execute all requested tools
             tool_results = []
-            for block in final.content:
+            for idx, block in enumerate(final.content):
                 if block.type != "tool_use":
                     continue
 
-                yield _sse({"type": "tool_start", "name": block.name, "input": block.input})
-
                 result_text = await execute_tool(block.name, block.input)
 
-                yield _sse({"type": "tool_done", "name": block.name, "result": result_text})
+                yield _sse({
+                    "type": "tool_done",
+                    "index": idx,
+                    "name": block.name,
+                    "input": block.input,
+                    "result": result_text
+                })
 
                 tool_results.append({
                     "type": "tool_result",

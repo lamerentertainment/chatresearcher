@@ -235,6 +235,49 @@
       font-size: 11px;
     }
 
+    .thinking-wrap {
+      align-self: flex-start;
+      max-width: 780px;
+      width: 100%;
+    }
+
+    .thinking-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fdf2f8;
+      border: 1px solid #fbcfe8;
+      color: #be185d;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin: 4px 0;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .thinking-pill:hover {
+      background: #fce7f3;
+    }
+
+    .thinking-detail {
+      display: none;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin-top: 4px;
+      font-size: 13px;
+      color: #555;
+      padding: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.5;
+    }
+
+    .thinking-detail.open {
+      display: block;
+    }
+
     .tool-detail {
       display: none;
       background: #fff;
@@ -557,8 +600,24 @@
       search_opencaselaw: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
     };
     const TOOL_LABELS = {
-      search_local_cases: "Lokale DB",
+      search_local_cases: "Lokale Suche",
       search_opencaselaw: "OpenCaseLaw",
+      bash_code_execution: "Terminal",
+      text_editor_code_execution: "Text Editor",
+      search_decisions: "Entscheide suchen",
+      find_leading_cases: "Leitentscheide",
+      get_decision: "Entscheid",
+      get_case_brief: "Case Brief",
+      find_citations: "Zitationen",
+      find_appeal_chain: "Instanzenzug",
+      get_law: "Gesetz",
+      search_laws: "Gesetze suchen",
+      get_doctrine: "Doktrin",
+      get_commentary: "Kommentar",
+      search_commentaries: "Kommentare suchen",
+      analyze_legal_trend: "Rechtstrend",
+      get_praejudiz: "Präjudiz",
+      list_regesten: "Regesten Übersicht"
     };
 
     const SKILL_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`;
@@ -595,8 +654,8 @@
 
       const pill = document.createElement("div");
       pill.className = "tool-pill";
-      pill.innerHTML = (TOOL_ICONS[name] || "") +
-        `<span>${TOOL_LABELS[name] || name}</span>` +
+      pill.innerHTML = (TOOL_ICONS[name] || `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>`) +
+        `<span class="pill-label">${TOOL_LABELS[name] || name}</span>` +
         `<span class="spinner"></span>`;
       wrap.appendChild(pill);
 
@@ -606,8 +665,10 @@
       // Query section
       const querySection = document.createElement("div");
       querySection.className = "tool-detail-section";
+      let inputStr = typeof toolInput === "string" ? toolInput : JSON.stringify(toolInput || {}, null, 2);
+      if (inputStr === "{}") inputStr = "";
       querySection.innerHTML = `<div class="tool-detail-label">Suchanfrage</div>` +
-        `<div class="tool-detail-body">${escHtml(JSON.stringify(toolInput, null, 2))}</div>`;
+        `<div class="tool-detail-body query-body">${escHtml(inputStr)}</div>`;
       detail.appendChild(querySection);
 
       // Result section (filled later)
@@ -632,6 +693,35 @@
       return { pill, detail };
     }
 
+    function addThinkingWrap(insertBeforeEl) {
+      const wrap = document.createElement("div");
+      wrap.className = "thinking-wrap";
+
+      const pill = document.createElement("div");
+      pill.className = "thinking-pill";
+      
+      const icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
+      
+      pill.innerHTML = icon + `<span>Denkt nach…</span><span class="spinner" style="border-color:#fbcfe8;border-top-color:#be185d"></span>`;
+      wrap.appendChild(pill);
+
+      const detail = document.createElement("div");
+      detail.className = "thinking-detail open";
+      wrap.appendChild(detail);
+
+      pill.addEventListener("click", () => {
+        detail.classList.toggle("open");
+      });
+
+      if (insertBeforeEl) {
+        messagesEl.insertBefore(wrap, insertBeforeEl);
+      } else {
+        messagesEl.appendChild(wrap);
+      }
+      scrollBottom();
+      return { pill, detail };
+    }
+
     async function sendMessage(text) {
       sendBtn.disabled = true;
       addMessage("user", text);
@@ -642,10 +732,12 @@
       bubble.textContent = "";
       let assistantText = "";
 
-      // Track active tool wraps (name -> {pill, detail})
+      // Track active tool wraps (identifier -> {pill, detail})
       const activeTools = {};
       // Track active skill pills (index -> pill element)
       const activeSkills = {};
+      // Track active thinking wraps (index -> {pill, detail})
+      const activeThinking = {};
 
       try {
         const res = await fetch((window.BACKEND_URL || '') + "/chat", {
@@ -697,25 +789,116 @@
                 if (pill) {
                   pill.classList.add("done");
                   pill.querySelector(".spinner")?.remove();
+                  // Datei-Referenz nachtragen falls vom Server erkannt
+                  if (evt.files && evt.files.length) {
+                    const existing = pill.querySelector(".skill-file");
+                    if (!existing) {
+                      const fileSpan = document.createElement("span");
+                      fileSpan.className = "skill-file";
+                      fileSpan.textContent = "• " + evt.files[0];
+                      pill.appendChild(fileSpan);
+                    }
+                  }
                   delete activeSkills[evt.index];
                 }
               }
 
             } else if (evt.type === "tool_start") {
-              const toolWrap = addToolWrap(evt.name, evt.input || {}, assistantMsgDiv);
-              activeTools[evt.name] = toolWrap;
+              const toolWrap = addToolWrap(evt.name, "", assistantMsgDiv);
+              toolWrap.name = evt.name;
+              const toolKey = evt.index !== undefined ? evt.index : evt.name;
+              activeTools[toolKey] = toolWrap;
+
+            } else if (evt.type === "tool_input_delta") {
+              const toolWrap = activeTools[evt.index];
+              if (toolWrap) {
+                const qb = toolWrap.detail.querySelector(".query-body");
+                qb.textContent += evt.delta;
+
+                let pillLabel = toolWrap.pill.querySelector(".pill-label");
+                let textContent = qb.textContent;
+                let baseLabel = TOOL_LABELS[toolWrap.name] || toolWrap.name;
+                if (toolWrap.name === "bash_code_execution" || toolWrap.name === "bash") {
+                  let match = textContent.match(/"command"\s*:\s*"?([^"]*)/);
+                  if (match && match[1]) {
+                    let cmd = match[1].replace(/\\n/g, " ").replace(/\\"/g, '"');
+                    pillLabel.textContent = "Terminal: " + (cmd.length > 35 ? cmd.substring(0, 35) + '...' : cmd);
+                  }
+                } else if (toolWrap.name === "text_editor_code_execution" || toolWrap.name === "str_replace_editor") {
+                  let cmdMatch = textContent.match(/"command"\s*:\s*"([^"]+)"/);
+                  let pathMatch = textContent.match(/"path"\s*:\s*"([^"]+)/);
+                  let info = "Editor";
+                  if (cmdMatch && cmdMatch[1]) info += ` ${cmdMatch[1]}`;
+                  if (pathMatch && pathMatch[1]) {
+                    info += ` ${pathMatch[1].split('/').pop()}`;
+                  }
+                  pillLabel.textContent = info;
+                } else {
+                  let queryMatch = textContent.match(/"query"\s*:\s*"([^"]+)/) || textContent.match(/"titel"\s*:\s*"([^"]+)/);
+                  if (queryMatch) {
+                    let q = queryMatch[1];
+                    pillLabel.textContent = baseLabel + ": " + (q.length > 30 ? q.substring(0, 30) + "..." : q);
+                  } else {
+                    let articleMatch = textContent.match(/"article"\s*:\s*"([^"]+)/);
+                    if (articleMatch) {
+                      pillLabel.textContent = baseLabel + " (Art. " + articleMatch[1] + ")";
+                    }
+                  }
+                }
+              }
 
             } else if (evt.type === "tool_done") {
-              const toolWrap = activeTools[evt.name];
+              const toolKey = evt.index !== undefined ? evt.index : evt.name;
+              const toolWrap = activeTools[toolKey];
               if (toolWrap) {
                 toolWrap.pill.classList.add("done");
                 toolWrap.pill.querySelector(".spinner")?.remove();
-                const chevron = document.createElement("span");
-                chevron.textContent = " ▾";
-                toolWrap.pill.appendChild(chevron);
+                if (!toolWrap.pill.querySelector('.chevron')) {
+                  const chevron = document.createElement("span");
+                  chevron.className = "chevron";
+                  chevron.textContent = " ▾";
+                  toolWrap.pill.appendChild(chevron);
+                }
+                if (evt.input) {
+                  toolWrap.detail.querySelector(".query-body").textContent = typeof evt.input === "string" ? evt.input : JSON.stringify(evt.input, null, 2);
+                  
+                  let pillLabel = toolWrap.pill.querySelector(".pill-label");
+                  let baseLabel = TOOL_LABELS[toolWrap.name] || toolWrap.name;
+                  if (toolWrap.name === "bash_code_execution" || toolWrap.name === "bash") {
+                    if (evt.input.command) {
+                      let cmd = evt.input.command;
+                      pillLabel.textContent = "Terminal: " + (cmd.length > 35 ? cmd.substring(0, 35) + '...' : cmd);
+                    }
+                  } else if (toolWrap.name === "text_editor_code_execution" || toolWrap.name === "str_replace_editor") {
+                    let info = "Editor";
+                    if (evt.input.command) info += ` ${evt.input.command}`;
+                    if (evt.input.path) info += ` ${evt.input.path.split('/').pop()}`;
+                    pillLabel.textContent = info;
+                  } else {
+                    let info = baseLabel;
+                    if (evt.input.query) info += ": " + evt.input.query;
+                    else if (evt.input.titel) info += ": " + evt.input.titel;
+                    else if (evt.input.article) {
+                      let abbr = evt.input.abbreviation || evt.input.law_code || "";
+                      info += `: ${abbr} ${evt.input.article}`.trim();
+                    }
+                    pillLabel.textContent = info.length > 40 ? info.substring(0, 40) + "..." : info;
+                  }
+                }
                 if (evt.result) {
                   toolWrap.detail.querySelector(".result-body").textContent = evt.result;
                 }
+              }
+
+            } else if (evt.type === "thinking_start") {
+              const tWrap = addThinkingWrap(assistantMsgDiv);
+              activeThinking[evt.index] = tWrap;
+
+            } else if (evt.type === "thinking_delta") {
+              const tWrap = activeThinking[evt.index];
+              if (tWrap) {
+                tWrap.detail.textContent += evt.delta;
+                scrollBottom();
               }
 
             } else if (evt.type === "cost") {
@@ -730,6 +913,8 @@
               // Append to history
               history.push({ role: "user", content: text });
               history.push({ role: "assistant", content: assistantText });
+              // Clear any leftover spinners
+              assistantMsgDiv.parentElement.querySelectorAll(".spinner").forEach(e => e.remove());
 
             } else if (evt.type === "error") {
               bubble.innerHTML = marked.parse("**Fehler:** " + escHtml(evt.content));
