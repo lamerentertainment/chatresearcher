@@ -74,9 +74,9 @@ async def stream_chat(
 
     messages = history + [{"role": "user", "content": user_message}]
 
-    # Pricing for claude-haiku-4-5 (USD per million tokens)
-    INPUT_COST_PER_M = 1.0
-    OUTPUT_COST_PER_M = 5.0
+    # Pricing for claude-sonnet-4-5 (USD per million tokens)
+    INPUT_COST_PER_M = 3.0
+    OUTPUT_COST_PER_M = 15.0
 
     total_input_tokens = 0
     total_output_tokens = 0
@@ -98,7 +98,7 @@ async def stream_chat(
                 yield _sse({"type": "status", "text": "Verarbeite Zwischenergebnisse…"})
             if skill_ids:
                 stream_cm = client.beta.messages.stream(
-                    model="claude-haiku-4-5",
+                    model="claude-sonnet-4-5",
                     max_tokens=8192,
                     system=SYSTEM_PROMPT,
                     thinking={"type": "enabled", "budget_tokens": 4096},
@@ -114,7 +114,7 @@ async def stream_chat(
                 )
             else:
                 stream_cm = client.messages.stream(
-                    model="claude-haiku-4-5",
+                    model="claude-sonnet-4-5",
                     max_tokens=8192,
                     system=SYSTEM_PROMPT,
                     tools=TOOL_DEFINITIONS,
