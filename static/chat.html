@@ -112,6 +112,13 @@
       border-bottom-left-radius: 3px;
     }
 
+    .intermediate-text {
+      color: #777;
+      font-style: italic;
+      opacity: 0.85;
+      margin-bottom: 12px;
+    }
+
     .msg.assistant .bubble h1,
     .msg.assistant .bubble h2,
     .msg.assistant .bubble h3 {
@@ -529,8 +536,9 @@
     const modalCancel = document.getElementById("modal-cancel");
     const modalConfirm = document.getElementById("modal-confirm");
 
-    // Configure marked.js to open links in a new window
+    // Configure marked.js to open links in a new window and preserve line breaks
     marked.use({
+      breaks: true,
       renderer: {
         link(token) {
           const href = token.href;
@@ -738,6 +746,8 @@
       const assistantMsgDiv = bubble.closest(".msg");
       bubble.textContent = "";
       let assistantText = "";
+      let turns = [""];
+      let expectNewTurn = false;
 
       // Track active tool wraps (identifier -> {pill, detail})
       const activeTools = {};
@@ -783,12 +793,25 @@
             try { evt = JSON.parse(line); } catch { continue; }
 
             if (evt.type === "text") {
+              if (expectNewTurn) {
+                turns.push("");
+                expectNewTurn = false;
+              }
+              turns[turns.length - 1] += evt.content;
               assistantText += evt.content;
-              bubble.innerHTML = marked.parse(assistantText);
+
+              bubble.innerHTML = turns.map((t, idx) => {
+                let html = marked.parse(t);
+                if (idx < turns.length - 1) {
+                  return `<div class="intermediate-text">${html}</div>`;
+                }
+                return html;
+              }).join("");
               scrollBottom();
 
             } else if (evt.type === "skill_event") {
               if (evt.action === "start") {
+                expectNewTurn = true;
                 const pill = addSkillPill(evt.skills, evt.files, assistantMsgDiv);
                 activeSkills[evt.index] = pill;
               } else if (evt.action === "done") {
@@ -811,6 +834,7 @@
               }
 
             } else if (evt.type === "tool_start") {
+              expectNewTurn = true;
               const toolWrap = addToolWrap(evt.name, "", assistantMsgDiv);
               toolWrap.name = evt.name;
               const toolKey = evt.index !== undefined ? evt.index : evt.name;

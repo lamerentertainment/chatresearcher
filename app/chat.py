@@ -187,9 +187,6 @@ async def stream_chat(
 
                     elif event.type == "content_block_delta":
                         if event.delta.type == "text_delta":
-                            if turn_count > 1 and first_delta_in_turn:
-                                yield _sse({"type": "text", "content": "\n\n"})
-                            first_delta_in_turn = False
                             yield _sse({"type": "text", "content": event.delta.text})
                         elif event.index in code_exec_buffer:
                             code_exec_buffer[event.index] += getattr(event.delta, "partial_json", "")
