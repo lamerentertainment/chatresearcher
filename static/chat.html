@@ -501,21 +501,22 @@
     </div>
   </div>
 
-  <header>
-    <div>
-      Chat Researcher
-      <span>KRG Präjudizen + OpenCaseLaw</span>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <select id="model-select" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 12px; outline: none; cursor: pointer;">
+        <option value="claude-sonnet-4-5" selected>Claude 3.5 Sonnet</option>
+        <option value="hermes-agent">Hermes Agent (Local)</option>
+      </select>
+      <button id="new-chat" type="button" title="Neuen Chat beginnen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+          <path d="M21 3v5h-5"></path>
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+          <path d="M3 21v-5h5"></path>
+        </svg>
+        Neu
+      </button>
     </div>
-    <button id="new-chat" type="button" title="Neuen Chat beginnen">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-        stroke-linejoin="round">
-        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-        <path d="M21 3v5h-5"></path>
-        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-        <path d="M3 21v-5h5"></path>
-      </svg>
-      Neu
-    </button>
   </header>
 
   <div id="messages"></div>
@@ -551,6 +552,12 @@
 
     // Authentication Check
     const token = localStorage.getItem('chatresearcher_token');
+
+    // Hide model selector if Hermes is not enabled
+    if (typeof window.HERMES_ENABLED !== 'undefined' && !window.HERMES_ENABLED) {
+      const modelSelect = document.getElementById("model-select");
+      if (modelSelect) modelSelect.style.display = "none";
+    }
 
     // Conversation history sent with every request (stateless backend)
     let history = [];
@@ -756,6 +763,9 @@
       // Track active thinking wraps (index -> {pill, detail})
       const activeThinking = {};
 
+      const modelSelect = document.getElementById("model-select");
+      const model = modelSelect ? modelSelect.value : "claude-sonnet-4-5";
+
       try {
         const res = await fetch((window.BACKEND_URL || '') + "/chat", {
           method: "POST",
@@ -763,7 +773,7 @@
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ messages: history, message: text }),
+          body: JSON.stringify({ messages: history, message: text, model: model }),
         });
 
         if (res.status === 401) {

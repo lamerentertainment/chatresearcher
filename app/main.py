@@ -148,6 +148,7 @@ async def startup():
 class ChatRequest(BaseModel):
     messages: list[dict] = []   # prior conversation history
     message: str                # new user message
+    model: str = "claude-sonnet-4-5"
 
 
 @app.post("/chat")
@@ -161,7 +162,7 @@ async def chat(
         tokens_output = 0
         cost_usd = 0.0
         
-        async for chunk in stream_chat(request.messages, request.message):
+        async for chunk in stream_chat(request.messages, request.message, model=request.model):
             yield chunk
             
             # Extract metrics from the 'done' event
@@ -252,13 +253,18 @@ async def root(
         user = await current_active_user_simplified(request, session, user_manager)
         token_for_client = await generate_token_for_user(user)
         
+        # Check if Hermes is enabled
+        hermes_key = os.getenv("HERMES_API_KEY")
+        hermes_url = os.getenv("HERMES_URL")
+        hermes_enabled = "true" if hermes_key and hermes_url else "false"
+        
         # Generate HTML with injected token
         with open("static/chat.html", "r") as f:
             html_content = f.read()
             
         html_content = html_content.replace(
             "// Authentication Check",
-            f"// Authentication Check\n  window.BACKEND_URL = '{CLOUD_RUN_URL}';\n  const INJECTED_TOKEN = '{token_for_client}';\n  if (INJECTED_TOKEN) localStorage.setItem('chatresearcher_token', INJECTED_TOKEN);"
+            f"// Authentication Check\n  window.BACKEND_URL = '{CLOUD_RUN_URL}';\n  window.HERMES_ENABLED = {hermes_enabled};\n  const INJECTED_TOKEN = '{token_for_client}';\n  if (INJECTED_TOKEN) localStorage.setItem('chatresearcher_token', INJECTED_TOKEN);"
         )
         
         response = HTMLResponse(content=html_content)
