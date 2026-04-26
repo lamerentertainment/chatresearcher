@@ -25,6 +25,8 @@ from app.tools import TOOL_DEFINITIONS, execute_tool
 load_dotenv()
 HERMES_API_KEY = os.getenv("HERMES_API_KEY")
 HERMES_URL = os.getenv("HERMES_URL", "http://localhost:8642/v1")
+HERMES_REMOTE_URL = os.getenv("HERMES_REMOTE_URL")
+HERMES_REMOTE_API_KEY = os.getenv("HERMES_REMOTE_API_KEY")
 
 
 def _load_local_skills() -> str:
@@ -215,9 +217,12 @@ async def stream_chat(
     yield ":" + " " * 4096 + "\n\n"
 
     try:
-        if model == "hermes-agent":
+        if model in ("hermes-agent", "hermes-remote"):
             # --- Hermes Agent Loop ---
-            provider = HermesProvider(url=HERMES_URL, api_key=HERMES_API_KEY)
+            if model == "hermes-remote":
+                provider = HermesProvider(url=HERMES_REMOTE_URL, api_key=HERMES_REMOTE_API_KEY)
+            else:
+                provider = HermesProvider(url=HERMES_URL, api_key=HERMES_API_KEY)
             turn_count = 0
             while True:
                 turn_count += 1

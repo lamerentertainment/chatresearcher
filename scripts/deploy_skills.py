@@ -65,7 +65,7 @@ def main() -> None:
                 # Zuerst alle Versionen löschen, dann den Skill
                 versions = client.beta.skills.versions.list(skill_id, betas=BETAS)
                 for v in versions.data:
-                    client.beta.skills.versions.delete(skill_id, v.version, betas=BETAS)
+                    client.beta.skills.versions.delete(v.version, skill_id=skill_id, betas=BETAS)
                 client.beta.skills.delete(skill_id, betas=BETAS)
                 print(f"    Gelöscht.")
             except anthropic.NotFoundError:
