@@ -205,7 +205,7 @@ class HermesProvider:
 async def stream_chat(
     history: list[dict],
     user_message: str,
-    model: str = "claude-sonnet-4-5",
+    model: str = "claude-haiku-4-5",
 ) -> AsyncGenerator[str, None]:
     """
     Runs the agentic loop and yields SSE-formatted strings.
