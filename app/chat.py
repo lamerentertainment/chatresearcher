@@ -205,7 +205,7 @@ class HermesProvider:
 async def stream_chat(
     history: list[dict],
     user_message: str,
-    model: str = "claude-haiku-4-5",
+    model: str = "claude-sonnet-4-6",
 ) -> AsyncGenerator[str, None]:
     """
     Runs the agentic loop and yields SSE-formatted strings.
@@ -307,8 +307,8 @@ async def stream_chat(
         else:
             # --- Claude / Anthropic Loop ---
             client = anthropic.AsyncAnthropic()
-            INPUT_COST_PER_M = 1.0
-            OUTPUT_COST_PER_M = 10.0
+            INPUT_COST_PER_M = 3.0
+            OUTPUT_COST_PER_M = 15.0
             total_input_tokens = 0
             total_output_tokens = 0
 
