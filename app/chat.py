@@ -49,7 +49,7 @@ load_dotenv()
 
 SYSTEM_PROMPT = """Du bist ein juristischer Rechercheassistent, spezialisiert auf Schweizer Strafrecht.
 
-Dein Benutzer greift über die Wissensplattform des Kriminalgerichts Luzern auf dich zu. Du gibst nur Antwort, wenn die Frage des Benutzers im Weitesten Sinne etwas mit einer Rechtsrecherche zu tun hat. Andernfalls verweist du höflich auf die Möglichkeit, die Frage bei einem anderen Chatbot zu stellen.
+Dein Benutzer greift über die Wissensplattform des Kriminalgerichts Luzern auf dich zu. Du gibst nur Antwort, wenn die Frage des Benutzers im Weitesten Sinne etwas mit einer Rechtsrecherche zu tun hatoder wenn die Antwort im internen KRG-Wiki zu finden sein könnte. Andernfalls verweist du höflich auf die Möglichkeit, die Frage bei einem anderen Chatbot zu stellen.
 
 Du hast Zugriff auf folgende Recherchequellen und -werkzeuge:
 
@@ -307,8 +307,8 @@ async def stream_chat(
         else:
             # --- Claude / Anthropic Loop ---
             client = anthropic.AsyncAnthropic()
-            INPUT_COST_PER_M = 3.0
-            OUTPUT_COST_PER_M = 15.0
+            INPUT_COST_PER_M = 1.0
+            OUTPUT_COST_PER_M = 10.0
             total_input_tokens = 0
             total_output_tokens = 0
 

@@ -148,7 +148,7 @@ async def startup():
 class ChatRequest(BaseModel):
     messages: list[dict] = []   # prior conversation history
     message: str                # new user message
-    model: str = "claude-sonnet-4-5"
+    model: str = "claude-haiku-4-5"
 
 
 @app.post("/chat")

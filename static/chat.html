@@ -501,30 +501,31 @@
     </div>
   </div>
 
-    <div style="display: flex; align-items: center; gap: 10px;">
-      <select id="model-select" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 12px; outline: none; cursor: pointer;">
-        <option value="claude-sonnet-4-5" selected>Claude 3.5 Sonnet</option>
-        <option value="hermes-agent">Hermes Agent (Local)</option>
-        <option value="hermes-remote">Hermes Agent (Remote / Hetzner)</option>
-      </select>
-      <button id="new-chat" type="button" title="Neuen Chat beginnen">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-          stroke-linejoin="round">
-          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-          <path d="M21 3v5h-5"></path>
-          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-          <path d="M3 21v-5h5"></path>
-        </svg>
-        Neu
-      </button>
-    </div>
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <select id="model-select"
+      style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 12px; outline: none; cursor: pointer;">
+      <option value="claude-haiku-4-5" selected>Anthropic Claude</option>
+      <option value="hermes-agent">Hermes Agent (Local)</option>
+      <option value="hermes-remote">Hermes Agent (Remote / Hetzner)</option>
+    </select>
+    <button id="new-chat" type="button" title="Neuen Chat beginnen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+        <path d="M21 3v5h-5"></path>
+        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+        <path d="M3 21v-5h5"></path>
+      </svg>
+      Neu
+    </button>
+  </div>
   </header>
 
   <div id="messages"></div>
 
   <form id="form">
     <textarea id="input" rows="2"
-      placeholder="Formuliere hier Deine Rechtsfrage... (keine VERTRAULICHEN oder GEHEIMEN Daten!)"
+      placeholder="Formuliere hier Deine Rechtsfrage... (keine VERTRAULICHEN oder GEHEIMEN Daten! Der Chatbot verwendet einen externen Provider - aktuell Anthropic Claude Haiku 4.5)"
       autofocus></textarea>
     <button id="send" type="submit">Senden</button>
   </form>
@@ -765,7 +766,7 @@
       const activeThinking = {};
 
       const modelSelect = document.getElementById("model-select");
-      const model = modelSelect ? modelSelect.value : "claude-sonnet-4-5";
+      const model = modelSelect ? modelSelect.value : "claude-haiku-4-5";
 
       try {
         const res = await fetch((window.BACKEND_URL || '') + "/chat", {
@@ -981,17 +982,18 @@
     }
 
     // Initial Welcome Message
-    const welcomeText = `Guten Tag! Ich bin Ihr juristischer Rechercheassistent für Schweizer Strafrecht. Ich kann Sie bei folgenden Aufgaben unterstützen:
+    const welcomeText = `Guten Tag! Ich bin Ihr juristischer KI-Assistent am Kriminalgericht. Ich bin mit speziellen **Skills** ausgestattet, um Ihnen die Arbeit zu erleichtern:
 
-- **Lokale Datenbank:** Suche nach internen Präjudizen des Kriminalgerichts Luzern.
-- **OpenCaseLaw:** Recherche in über 956'000 schweizerischen Entscheiden, inklusive Leitentscheiden und Zitationsanalysen.
-- **Gesetze:** Abruf von Artikeln aus StGB, StPO, BV, OR und weiteren Bundesgesetzen.
-- **Doktrin & Kommentare:** Zugriff auf wissenschaftliche Kommentare (OnlineKommentar.ch) und dogmatische Analysen.
+- **Textbausteine erstellen:** Ich recherchiere selbständig die aktuelle Rechtsprechung und verfasse für Sie gerichtskonforme Textbausteine zur abstrakten Rechtslage (z.B. "Erstelle einen Textbaustein zu Art. 146 StGB").
+- **KRG Wissensmanagement:** Ich helfe Ihnen, Dokumente, Vorlagen oder Formulare auf der KRG-Wissensplattform zu finden und verlinke Sie direkt mit der korrekten SharePoint-Dateiablage (z.B. "Wo finde ich die Vorlage für ein Urteil?").
 
-Ich habe die **besondere Fähigkeit** (skill), basierend auf der aktuellen Rechtsprechung den KRG-Redaktionsrichtlinien entsprechende 
-**Textbausteine** zu erstellen. Fordere mich auf, indem du mir zum Beispiel sagst: "Erstelle einen Textbaustein für den objektiven Tatbestand der Sachbeschädigung gemäss Art. 144 StGB". 
+Darüber hinaus unterstütze ich Sie bei der juristischen Recherche:
+- **OpenCaseLaw:** Suche in über 969'000 Schweizer Entscheiden inkl. Zitationsanalysen und Leitentscheiden.
+- **Lokale Datenbank:** Recherche in internen Präjudizen des Kriminalgerichts Luzern.
+- **Gesetze & Kommentare:** Abruf von Bundes- und Kantonsgesetzen sowie Zugriff auf wissenschaftliche Online-Kommentare und historische Materialien.
 
-Wie kann ich Ihnen heute bei Ihrer Recherchearbeit helfen?`;
+Wie kann ich Sie heute bei Ihrer Arbeit unterstützen?
+`;
 
     const welcomeBubble = addMessage("assistant", "");
     welcomeBubble.innerHTML = marked.parse(welcomeText);
