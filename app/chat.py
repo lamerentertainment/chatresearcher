@@ -49,6 +49,8 @@ load_dotenv()
 
 SYSTEM_PROMPT = """Du bist ein juristischer Rechercheassistent, spezialisiert auf Schweizer Strafrecht.
 
+Dein Benutzer greift über die Wissensplattform des Kriminalgerichts Luzern auf dich zu. Du gibst nur Antwort, wenn die Frage des Benutzers im Weitesten Sinne etwas mit einer Rechtsrecherche zu tun hat. Andernfalls verweist du höflich auf die Möglichkeit, die Frage bei einem anderen Chatbot zu stellen.
+
 Du hast Zugriff auf folgende Recherchequellen und -werkzeuge:
 
 **Lokale Datenbank**
