@@ -34,28 +34,29 @@
     }
 
     #new-chat {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff;
-      padding: 5px 12px;
-      border-radius: 6px;
-      font-size: 13px;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      color: #444;
+      padding: 0 16px;
+      border-radius: 8px;
+      font-size: 14px;
       cursor: pointer;
       font-weight: 500;
       transition: all 0.2s;
       display: flex;
       align-items: center;
       gap: 6px;
+      height: 42px;
+      align-self: flex-end;
     }
 
     #new-chat:hover {
-      background: rgba(255, 255, 255, 0.2);
-      border-color: rgba(255, 255, 255, 0.4);
+      background: #e5e5e5;
     }
 
     #new-chat svg {
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
     }
 
     header span {
@@ -501,24 +502,16 @@
     </div>
   </div>
 
-  <div style="display: flex; align-items: center; gap: 10px;">
-    <select id="model-select"
-      style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 12px; outline: none; cursor: pointer;">
-      <option value="claude-haiku-4-5" selected>Anthropic Claude</option>
-      <option value="hermes-agent">Hermes Agent (Local)</option>
-      <option value="hermes-remote">Hermes Agent (Remote / Hetzner)</option>
-    </select>
-    <button id="new-chat" type="button" title="Neuen Chat beginnen">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-        stroke-linejoin="round">
-        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-        <path d="M21 3v5h-5"></path>
-        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-        <path d="M3 21v-5h5"></path>
-      </svg>
-      Neu
-    </button>
-  </div>
+  <header>
+    <div>Chat Researcher</div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <select id="model-select"
+        style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 12px; outline: none; cursor: pointer;">
+        <option value="claude-haiku-4-5" selected>Anthropic Claude</option>
+        <option value="hermes-agent">Hermes Agent (Local)</option>
+        <option value="hermes-remote">Hermes Agent (Remote / Hetzner)</option>
+      </select>
+    </div>
   </header>
 
   <div id="messages"></div>
@@ -528,6 +521,15 @@
       placeholder="Formuliere hier Deine Rechtsfrage... (keine VERTRAULICHEN oder GEHEIMEN Daten! Der Chatbot verwendet einen externen KI-Provider - aktuell Anthropic Claude Sonnet 4.5)"
       autofocus></textarea>
     <button id="send" type="submit">Senden</button>
+    <button id="new-chat" type="button" title="Neuen Chat beginnen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+        <path d="M21 3v5h-5"></path>
+        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+        <path d="M3 21v-5h5"></path>
+      </svg>
+      Neuer Chat
+    </button>
   </form>
 
   <script>
