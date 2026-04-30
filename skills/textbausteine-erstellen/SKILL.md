@@ -7,7 +7,7 @@ description: Erstelle gerichtskonforme Textbausteine zur abstrakten Rechtslage (
 
 ## Zweck
 
-Dieser Skill leitet Claude an, auf Anfrage selbständig via **OpenCaseLaw MCP** die aktuelle Rechtsprechung zu einem Tatbestand oder einer Rechtsfrage zu recherchieren und das Ergebnis als gerichtskonformen Textbaustein aufzubereiten. Der Textbaustein beschreibt die **abstrakte Rechtslage** – gesetzlicher Tatbestand und einschlägige Rechtsprechung – ohne Subsumtion auf einen konkreten Sachverhalt.
+Dieser Skill leitet den Agenten an, auf Anfrage selbständig via **OpenCaseLaw MCP** die aktuelle Rechtsprechung zu einem Tatbestand oder einer Rechtsfrage zu recherchieren und das Ergebnis als gerichtskonformen Textbaustein aufzubereiten. Der Textbaustein beschreibt die **abstrakte Rechtslage** – gesetzlicher Tatbestand und einschlägige Rechtsprechung – ohne Subsumtion auf einen konkreten Sachverhalt.
 
 ---
 
@@ -15,20 +15,20 @@ Dieser Skill leitet Claude an, auf Anfrage selbständig via **OpenCaseLaw MCP** 
 
 ### Schritt 0 – Bestehende Textbausteine prüfen
 
-Bevor Claude mit der Recherche beginnt, liest er **zuerst die Indexdatei** `skills/textbausteine-erstellen/resources/tb/index.md`. Diese Datei listet alle verfügbaren Textbausteine mit Kürzel, Titel und Dateiname auf und ist der schnellste Weg zu prüfen, ob ein Baustein bereits existiert.
+Bevor der Agent mit der Recherche beginnt, liest er **zuerst die Indexdatei** `skills/textbausteine-erstellen/resources/tb/index.md`. Diese Datei listet alle verfügbaren Textbausteine mit Kürzel, Titel und Dateiname auf und ist der schnellste Weg zu prüfen, ob ein Baustein bereits existiert.
 
 1. **Existiert bereits ein Baustein** für den angefragten Artikel? Index prüfen, dann:
    - Den bestehenden Baustein dem Benutzer vorlegen (Datei lesen und Inhalt zeigen).
    - Fragen, ob er aktualisiert, ergänzt oder ein neuer Baustein daneben erstellt werden soll.
    - Keinen neuen Baustein erstellen, ohne dies zu klären.
 
-2. **Bestehende Bausteine als Vorlage nutzen**: Claude liest 1–2 thematisch verwandte Bausteine aus dem Index (gleicher Gesetzesabschnitt, ähnliche Struktur), um Stil, Detailtiefe und Aufbau konsistent zu halten.
+2. **Bestehende Bausteine als Vorlage nutzen**: Der Agent liest 1–2 thematisch verwandte Bausteine aus dem Index (gleicher Gesetzesabschnitt, ähnliche Struktur), um Stil, Detailtiefe und Aufbau konsistent zu halten.
 
 Die Dateinamen folgen dem Schema `[Gesetz][Artikel][Suffix].md` (z.B. `StGB146.md`, `StGB146a.md`, `StGB146b.md`). Varianten eines Artikels (Absätze, Qualifikationen) werden als separate Dateien mit Suffix angelegt. **Nach dem Erstellen eines neuen Bausteins ist der Index zu aktualisieren.**
 
 ### Schritt 1 – Recherche (ohne Rückfrage sofort starten)
 
-Claude wählt die OpenCaseLaw-Tools nach Fragestellung:
+Der Agent wählt die OpenCaseLaw-Tools nach Fragestellung:
 
 | Situation | Tool |
 |---|---|
@@ -38,7 +38,7 @@ Claude wählt die OpenCaseLaw-Tools nach Fragestellung:
 | Aktualität eines BGE prüfen | `find_citations` oder `analyze_legal_trend` |
 | Gesetzestext nachschlagen | `get_law` (SR-Nummer) oder `search_laws` |
 
-Claude kombiniert mehrere Tools, wenn nötig (z.B. zuerst `get_doctrine`, dann `get_case_brief` für die relevantesten Treffer).
+Der Agent kombiniert mehrere Tools, wenn nötig (z.B. zuerst `get_doctrine`, dann `get_case_brief` für die relevantesten Treffer).
 
 ### Schritt 2 – Ergebnisse sichten
 
@@ -144,7 +144,7 @@ hinzugefügt am 28.03.2026
 ## 5. Qualitätssicherung
 
 - **Aktualität**: Via `find_citations` oder `analyze_legal_trend` prüfen, ob zitierte Entscheide noch massgeblich sind. Überholte Rechtsprechung wird nicht verwendet.
-- **Keine Halluzinationen**: Claude erfindet keine BGE-Nummern und keine Erwägungsziffern. Wenn die Recherche keine einschlägige Rechtsprechung ergibt, wird dies mitgeteilt, anstatt Quellen zu fabrizieren.
+- **Keine Halluzinationen**: Der Agent erfindet keine BGE-Nummern und keine Erwägungsziffern. Wenn die Recherche keine einschlägige Rechtsprechung ergibt, wird dies mitgeteilt, anstatt Quellen zu fabrizieren.
 - **Keine langen Urteilszitate**: Der Textbaustein gibt die Rechtsprechung sinngemäss wieder.
 - **Einheitliche Terminologie**: Durchgängig dieselben Begriffe verwenden (z.B. konsequent "beschuldigte Person" oder "Beschuldigter").
-- **Hinweis an Benutzer**: Claude weist am Ende darauf hin, dass die Einschlägigkeit und Aktualität der zitierten Entscheide vom Gerichtsschreiber zu prüfen sind.
+- **Hinweis an Benutzer**: Der Agent weist am Ende darauf hin, dass die Einschlägigkeit und Aktualität der zitierten Entscheide vom Gerichtsschreiber zu prüfen sind.
