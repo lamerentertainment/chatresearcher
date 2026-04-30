@@ -316,8 +316,12 @@ async def stream_chat(
             client = anthropic.AsyncAnthropic()
             INPUT_COST_PER_M = 3.0
             OUTPUT_COST_PER_M = 15.0
+            CACHE_WRITE_COST_PER_M = 3.75   # 1.25x base for 5-min TTL
+            CACHE_READ_COST_PER_M = 0.30    # 0.1x base
             total_input_tokens = 0
             total_output_tokens = 0
+            total_cache_write_tokens = 0
+            total_cache_read_tokens = 0
 
             skill_ids = get_skill_ids()
             skill_names = get_skill_names()
@@ -328,7 +332,7 @@ async def stream_chat(
                 turn_count += 1
                 if turn_count > 1:
                     yield _sse({"type": "status", "text": "Verarbeite Zwischenergebnisse…"})
-                
+
                 if skill_ids:
                     stream_cm = client.beta.messages.stream(
                         model=model,
@@ -339,6 +343,7 @@ async def stream_chat(
                         messages=messages,
                         betas=["skills-2025-10-02", "code-execution-2025-08-25"],
                         container={"skills": [{"type": "custom", "skill_id": sid, "version": "latest"} for sid in skill_ids]},
+                        cache_control={"type": "ephemeral"},
                     )
                 else:
                     stream_cm = client.messages.stream(
@@ -348,6 +353,7 @@ async def stream_chat(
                         tools=TOOL_DEFINITIONS,
                         messages=messages,
                         thinking={"type": "enabled", "budget_tokens": 4096},
+                        cache_control={"type": "ephemeral"},
                     )
                 
                 async with stream_cm as stream:
@@ -406,6 +412,8 @@ async def stream_chat(
 
                 total_input_tokens += final.usage.input_tokens
                 total_output_tokens += final.usage.output_tokens
+                total_cache_write_tokens += getattr(final.usage, "cache_creation_input_tokens", 0) or 0
+                total_cache_read_tokens += getattr(final.usage, "cache_read_input_tokens", 0) or 0
                 messages.append({"role": "assistant", "content": final.content})
 
                 if final.stop_reason != "tool_use":
@@ -419,7 +427,12 @@ async def stream_chat(
                     tool_results.append({"type": "tool_result", "tool_use_id": block.id, "content": result_text})
                 messages.append({"role": "user", "content": tool_results})
 
-            cost_usd = (total_input_tokens * INPUT_COST_PER_M + total_output_tokens * OUTPUT_COST_PER_M) / 1_000_000
+            cost_usd = (
+                total_input_tokens * INPUT_COST_PER_M
+                + total_output_tokens * OUTPUT_COST_PER_M
+                + total_cache_write_tokens * CACHE_WRITE_COST_PER_M
+                + total_cache_read_tokens * CACHE_READ_COST_PER_M
+            ) / 1_000_000
             yield _sse({"type": "cost", "input_tokens": total_input_tokens, "output_tokens": total_output_tokens, "cost_usd": round(cost_usd, 6)})
             yield _sse({"type": "done", "tokens_input": total_input_tokens, "tokens_output": total_output_tokens, "cost_usd": cost_usd})
 
