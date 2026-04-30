@@ -85,7 +85,7 @@ Für Rechtsprechungshinweise:
 ## 3. Zitierweise
 
 Keine Hyperlinks im Textbaustein (direkte Verwendung im Urteil muss möglich sein). Biete dem User aber in einem 
-begleitenden Text Hyperlinks an, damit er die verwendeten Zitate prüfen kann.
+begleitenden Text Hyperlinks an, damit er die verwendeten Zitate prüfen kann. Verwende dabei ausschliesslich das Standard-Markdown-Format [Titel](URL) ohne Zusätze wie {target="_blank"}.
 
 ### 3.1 BGE
 ```
