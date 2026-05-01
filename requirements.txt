@@ -6,4 +6,4 @@ mcp
 fastapi-users[sqlalchemy]
 aiosqlite
 bcrypt
-
+google-cloud-firestore

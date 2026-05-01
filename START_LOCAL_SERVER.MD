@@ -21,3 +21,19 @@ uvicorn app.main:app --reload
 ```
 
 Der Server ist anschließend unter [http://127.0.0.1:8000](http://127.0.0.1:8000) erreichbar.
+
+## 4. (Optional) Firestore Emulator nutzen
+Um Abfragen lokal zu testen, ohne in die echte Cloud zu schreiben:
+
+1. Emulator in einem separaten Terminal starten:
+   ```bash
+   firebase emulators:start
+   ```
+
+2. Im Terminal des Servers die Emulator-Variable setzen und Server starten:
+   ```bash
+   export FIRESTORE_EMULATOR_HOST="localhost:8080"
+   uvicorn app.main:app --reload
+   ```
+
+Das Emulator-UI ist unter [http://localhost:4000](http://localhost:4000) erreichbar.

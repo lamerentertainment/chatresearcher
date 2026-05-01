@@ -167,7 +167,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Zeitstempel</th>
-                        <th>User ID</th>
+                        <th>Benutzer</th>
                         <th>Anfrage</th>
                         <th>Tokens (In/Out)</th>
                         <th>Kosten (USD)</th>
@@ -196,7 +196,7 @@
                 }
 
                 const url = new URL('/admin/requests', window.location.origin);
-                url.searchParams.set('json', 'true');
+                url.searchParams.set('as_json', 'true');
                 if (token) {
                     url.searchParams.set('token', token);
                 }
@@ -227,7 +227,7 @@
                 <tr>
                     <td>${req.id}</td>
                     <td class="timestamp">${new Date(req.timestamp).toLocaleString('de-DE')}</td>
-                    <td>${req.user_id}</td>
+                    <td>${escapeHtml(req.user_email)}</td>
                     <td class="query">${escapeHtml(req.query)}</td>
                     <td class="metrics">
                         <span class="badge badge-tokens">${req.tokens_input} / ${req.tokens_output}</span>
@@ -245,7 +245,7 @@
             const filteredData = allData.filter(req => 
                 req.query.toLowerCase().includes(filter) || 
                 req.id.toString().includes(filter) ||
-                req.user_id.toString().includes(filter)
+                req.user_email.toLowerCase().includes(filter)
             );
             renderTable(filteredData);
         }

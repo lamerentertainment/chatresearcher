@@ -1,5 +1,6 @@
 import os
 import json
+from google.cloud import firestore
 from typing import Optional
 
 from fastapi import FastAPI, Depends, Request, HTTPException, BackgroundTasks, Form, status
@@ -39,6 +40,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 app = FastAPI(title="Chat Researcher")
+firestore_db = firestore.AsyncClient()
 
 # CORS: allow the Firebase Hosting domain to call Cloud Run directly (for SSE streaming).
 # Set CORS_ORIGINS as comma-separated list in Cloud Run env vars,
@@ -119,7 +121,7 @@ async def list_users(
 @app.get("/admin/requests", tags=["admin"])
 async def list_requests(
     request: Request,
-    json: bool = False,
+    as_json: bool = False,
     user: User = Depends(current_active_user_simplified),
     session: AsyncSession = Depends(get_async_session)
 ):
@@ -127,9 +129,32 @@ async def list_requests(
     if not user.is_superuser:
         raise HTTPException(status_code=403, detail="Forbidden")
     
-    if json:
-        result = await session.execute(select(UserRequest).order_by(UserRequest.timestamp.desc()).limit(100))
-        return result.scalars().all()
+    if as_json:
+        # Fetch latest 100 requests from Firestore
+        requests_ref = firestore_db.collection("requests")
+        query = requests_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(100)
+        docs = await query.get()
+        
+        requests = []
+        for doc in docs:
+            data = doc.to_dict()
+            # Convert timestamp to ISO string for JSON
+            ts = data.get("timestamp")
+            if ts:
+                ts_str = ts.isoformat()
+            else:
+                ts_str = None
+                
+            requests.append({
+                "id": doc.id,
+                "timestamp": ts_str,
+                "query": data.get("query"),
+                "tokens_input": data.get("tokens_input", 0),
+                "tokens_output": data.get("tokens_output", 0),
+                "cost_usd": data.get("cost_usd", 0.0),
+                "user_email": data.get("user_email", "unknown")
+            })
+        return requests
     
     return FileResponse("static/admin_requests.html")
 
@@ -176,10 +201,11 @@ async def chat(
                 except:
                     pass
         
-        # Log to database after the stream is finished
+        # Log to Firestore after the stream is finished
         background_tasks.add_task(
-            save_request_to_db,
+            save_request_to_firestore,
             user_id=user.id,
+            user_email=user.email,
             query=request.message,
             tokens_input=tokens_input,
             tokens_output=tokens_output,
@@ -198,18 +224,24 @@ async def chat(
         },
     )
 
+async def save_request_to_firestore(user_id: int, user_email: str, query: str, tokens_input: int, tokens_output: int, cost_usd: float):
+    try:
+        await firestore_db.collection("requests").add({
+            "user_id": user_id,
+            "user_email": user_email,
+            "query": query,
+            "tokens_input": tokens_input,
+            "tokens_output": tokens_output,
+            "cost_usd": cost_usd,
+            "timestamp": firestore.SERVER_TIMESTAMP
+        })
+    except Exception as e:
+        print(f"Error saving to Firestore: {e}")
+
 async def save_request_to_db(user_id: int, query: str, tokens_input: int, tokens_output: int, cost_usd: float):
-    from app.auth import async_session_maker
-    async with async_session_maker() as session:
-        new_request = UserRequest(
-            user_id=user_id,
-            query=query,
-            tokens_input=tokens_input,
-            tokens_output=tokens_output,
-            cost_usd=cost_usd
-        )
-        session.add(new_request)
-        await session.commit()
+    # Keep the old SQLite logging as a backup for now if desired, or remove it.
+    # For now, let's keep the function name but point to Firestore in chat() above.
+    pass
 
 
 @app.get("/logout")
