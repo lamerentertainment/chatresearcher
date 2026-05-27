@@ -294,7 +294,13 @@ async def root(
         # Check if Hermes is enabled
         hermes_key = os.getenv("HERMES_API_KEY")
         hermes_url = os.getenv("HERMES_URL")
-        hermes_enabled = "true" if hermes_key and hermes_url else "false"
+        hermes_local_enabled = "true" if hermes_key and hermes_url else "false"
+
+        hermes_remote_key = os.getenv("HERMES_REMOTE_API_KEY")
+        hermes_remote_url = os.getenv("HERMES_REMOTE_URL")
+        hermes_remote_enabled = "true" if hermes_remote_key and hermes_remote_url else "false"
+
+        hermes_enabled = "true" if (hermes_key and hermes_url) or (hermes_remote_key and hermes_remote_url) else "false"
         
         # Generate HTML with injected token
         with open("static/chat.html", "r") as f:
@@ -302,7 +308,7 @@ async def root(
             
         html_content = html_content.replace(
             "// Authentication Check",
-            f"// Authentication Check\n  window.BACKEND_URL = '{CLOUD_RUN_URL}';\n  window.HERMES_ENABLED = {hermes_enabled};\n  const INJECTED_TOKEN = '{token_for_client}';\n  if (INJECTED_TOKEN) localStorage.setItem('chatresearcher_token', INJECTED_TOKEN);"
+            f"// Authentication Check\n  window.BACKEND_URL = '{CLOUD_RUN_URL}';\n  window.HERMES_ENABLED = {hermes_enabled};\n  window.HERMES_LOCAL_ENABLED = {hermes_local_enabled};\n  window.HERMES_REMOTE_ENABLED = {hermes_remote_enabled};\n  const INJECTED_TOKEN = '{token_for_client}';\n  if (INJECTED_TOKEN) localStorage.setItem('chatresearcher_token', INJECTED_TOKEN);"
         )
         
         response = HTMLResponse(content=html_content)

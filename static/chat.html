@@ -558,10 +558,28 @@
     // Authentication Check
     const token = localStorage.getItem('chatresearcher_token');
 
-    // Hide model selector if Hermes is not enabled
-    if (typeof window.HERMES_ENABLED !== 'undefined' && !window.HERMES_ENABLED) {
-      const modelSelect = document.getElementById("model-select");
-      if (modelSelect) modelSelect.style.display = "none";
+    // Hide/show model selector and specific options based on what is enabled
+    const modelSelect = document.getElementById("model-select");
+    if (modelSelect) {
+      const isLocalEnabled = typeof window.HERMES_LOCAL_ENABLED !== 'undefined' ? window.HERMES_LOCAL_ENABLED : false;
+      const isRemoteEnabled = typeof window.HERMES_REMOTE_ENABLED !== 'undefined' ? window.HERMES_REMOTE_ENABLED : false;
+
+      const localOpt = modelSelect.querySelector('option[value="hermes-agent"]');
+      const remoteOpt = modelSelect.querySelector('option[value="hermes-remote"]');
+
+      if (localOpt && !isLocalEnabled) {
+        localOpt.remove();
+      }
+      if (remoteOpt && !isRemoteEnabled) {
+        remoteOpt.remove();
+      }
+
+      // If neither is enabled, hide the entire selector
+      if (!isLocalEnabled && !isRemoteEnabled) {
+        modelSelect.style.display = "none";
+      } else {
+        modelSelect.style.display = "block";
+      }
     }
 
     // Conversation history sent with every request (stateless backend)
