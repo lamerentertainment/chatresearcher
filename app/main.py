@@ -149,6 +149,7 @@ async def list_requests(
                 "id": doc.id,
                 "timestamp": ts_str,
                 "query": data.get("query"),
+                "response": data.get("response", ""),
                 "tokens_input": data.get("tokens_input", 0),
                 "tokens_output": data.get("tokens_output", 0),
                 "cost_usd": data.get("cost_usd", 0.0),
@@ -186,11 +187,12 @@ async def chat(
         tokens_input = 0
         tokens_output = 0
         cost_usd = 0.0
+        response_text = ""
         
         async for chunk in stream_chat(request.messages, request.message, model=request.model):
             yield chunk
             
-            # Extract metrics from the 'done' event
+            # Extract metrics from the 'done' event and accumulate chatbot response
             if chunk.startswith("data: "):
                 try:
                     data = json.loads(chunk[6:])
@@ -198,6 +200,8 @@ async def chat(
                         tokens_input = data.get("tokens_input", 0)
                         tokens_output = data.get("tokens_output", 0)
                         cost_usd = data.get("cost_usd", 0.0)
+                    elif data.get("type") == "text":
+                        response_text += data.get("content", "")
                 except:
                     pass
         
@@ -207,6 +211,7 @@ async def chat(
             user_id=user.id,
             user_email=user.email,
             query=request.message,
+            response=response_text,
             tokens_input=tokens_input,
             tokens_output=tokens_output,
             cost_usd=cost_usd
@@ -224,12 +229,13 @@ async def chat(
         },
     )
 
-async def save_request_to_firestore(user_id: int, user_email: str, query: str, tokens_input: int, tokens_output: int, cost_usd: float):
+async def save_request_to_firestore(user_id: int, user_email: str, query: str, response: str, tokens_input: int, tokens_output: int, cost_usd: float):
     try:
         await firestore_db.collection("requests").add({
             "user_id": user_id,
             "user_email": user_email,
             "query": query,
+            "response": response,
             "tokens_input": tokens_input,
             "tokens_output": tokens_output,
             "cost_usd": cost_usd,

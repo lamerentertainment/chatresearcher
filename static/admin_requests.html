@@ -168,7 +168,7 @@
                         <th>ID</th>
                         <th>Zeitstempel</th>
                         <th>Benutzer</th>
-                        <th>Anfrage</th>
+                        <th>Anfrage / Antwort</th>
                         <th>Tokens (In/Out)</th>
                         <th>Kosten (USD)</th>
                     </tr>
@@ -228,7 +228,15 @@
                     <td>${req.id}</td>
                     <td class="timestamp">${new Date(req.timestamp).toLocaleString('de-DE')}</td>
                     <td>${escapeHtml(req.user_email)}</td>
-                    <td class="query">${escapeHtml(req.query)}</td>
+                    <td class="query">
+                        <div class="user-query" style="font-weight: 500;">${escapeHtml(req.query)}</div>
+                        ${req.response ? `
+                        <div class="bot-response" style="margin-top: 0.6rem; padding: 0.6rem; background-color: #f8fafc; border-left: 3px solid #2563eb; border-radius: 0 0.375rem 0.375rem 0; font-size: 0.8rem; max-height: 150px; overflow-y: auto; white-space: pre-wrap; color: #334155; line-height: 1.4; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);">
+                            <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #2563eb; font-weight: 600; margin-bottom: 0.25rem;">Antwort des Chatbots</div>
+                            ${escapeHtml(req.response)}
+                        </div>
+                        ` : ''}
+                    </td>
                     <td class="metrics">
                         <span class="badge badge-tokens">${req.tokens_input} / ${req.tokens_output}</span>
                     </td>
