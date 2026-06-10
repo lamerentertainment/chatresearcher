@@ -1,9 +1,12 @@
-"""Liest die Skill-IDs aus skill_ids.json für den API-Call."""
 import json
+import os
 from pathlib import Path
 from typing import Optional
 
-_SKILL_IDS_PATH = Path(__file__).parent.parent / "skill_ids.json"
+TENANT = os.getenv("TENANT", "krg")
+_SKILL_IDS_PATH = Path(__file__).parent.parent / "skills" / TENANT / "skill_ids.json"
+
+
 
 
 def get_skill_ids() -> list[str]:

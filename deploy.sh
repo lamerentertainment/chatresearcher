@@ -17,10 +17,12 @@ echo "--- 1. Importiere Präjudizen ---"
 PYTHONPATH=. python3 scripts/import_data.py Präjudizen.csv
 
 echo "--- 1b. Rechtliche Textbausteine aktualisieren ---"
-python3 scripts/split_docx_to_md.py ./TB-Strafrecht.docx ./skills/textbausteine-erstellen/resources/
+export TENANT="${TENANT:-krg}"
+python3 scripts/split_docx_to_md.py ./TB-Strafrecht.docx ./skills/$TENANT/textbausteine-erstellen/resources/
 
 echo "--- 1c. Skills zur Anthropic API hochladen ---"
 python3 scripts/deploy_skills.py
+
 
 echo "--- 2. Backend Deployment (Cloud Run) ---"
 gcloud run deploy $SERVICE \

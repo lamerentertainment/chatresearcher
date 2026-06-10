@@ -30,8 +30,9 @@ HERMES_REMOTE_API_KEY = os.getenv("HERMES_REMOTE_API_KEY")
 
 
 def _load_local_skills() -> str:
-    """Reads all SKILL.md files from the skills/ directory and returns an aggregated prompt string."""
-    skills_dir = Path(__file__).parent.parent / "skills"
+    """Reads all SKILL.md files from the tenant skills/ directory and returns an aggregated prompt string."""
+    tenant = os.getenv("TENANT", "krg")
+    skills_dir = Path(__file__).parent.parent / "skills" / tenant
     all_content = []
     if skills_dir.exists():
         for skill_path in skills_dir.rglob("SKILL.md"):
@@ -44,6 +45,7 @@ def _load_local_skills() -> str:
     if not all_content:
         return ""
     return "\n\n--- LOCAL SKILLS ---\n\n" + "\n\n".join(all_content)
+
 
 load_dotenv()
 

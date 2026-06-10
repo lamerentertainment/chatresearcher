@@ -6,8 +6,18 @@ SERVER_IP="${SERVER_IP:-178.105.27.61}"
 SERVER_USER="root"
 REMOTE_SKILLS_DIR="/root/.hermes/skills"
 SERVICE="hermes-gateway"
-SKILLS=(krg-wissen textbausteine-erstellen)
-LOCAL_SKILLS_DIR="$(cd "$(dirname "$0")" && pwd)/skills"
+TENANT="${TENANT:-krg}"
+LOCAL_SKILLS_DIR="$(cd "$(dirname "$0")" && pwd)/skills/$TENANT"
+
+# Dynamically detect skill subfolders
+SKILLS=()
+if [ -d "$LOCAL_SKILLS_DIR" ]; then
+  for d in "$LOCAL_SKILLS_DIR"/*/; do
+    if [ -d "$d" ]; then
+      SKILLS+=("$(basename "$d")")
+    fi
+  done
+fi
 
 echo "--- 1. Skills via rsync hochladen ---"
 for skill in "${SKILLS[@]}"; do
@@ -20,6 +30,7 @@ for skill in "${SKILLS[@]}"; do
     --exclude='.venv' \
     "$src" "$dst"
 done
+
 
 echo "--- 2. Hermes-Gateway neu starten ---"
 ssh "$SERVER_USER@$SERVER_IP" "systemctl restart $SERVICE"

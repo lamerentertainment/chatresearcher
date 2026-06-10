@@ -15,9 +15,11 @@ from pathlib import Path
 
 import anthropic
 
-SKILLS_DIR = Path("skills")
-SKILL_IDS_FILE = Path("skill_ids.json")
+TENANT = os.environ.get("TENANT", "krg")
+SKILLS_DIR = Path("skills") / TENANT
+SKILL_IDS_FILE = SKILLS_DIR / "skill_ids.json"
 BETAS = ["skills-2025-10-02"]
+
 
 
 def files_from_dir(skill_dir: Path) -> list:
