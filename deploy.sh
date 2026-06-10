@@ -3,7 +3,8 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-SERVICE="chat-researcher"
+TENANT="${TENANT:-krg}"
+SERVICE="${SERVICE:-chat-researcher-$TENANT}"
 REGION="europe-west3"
 PROJECT_ID="gen-lang-client-0915148106"
 FIREBASE_DOMAINS="https://${PROJECT_ID}.web.app,https://${PROJECT_ID}.firebaseapp.com"
@@ -17,8 +18,8 @@ echo "--- 1. Importiere Präjudizen ---"
 PYTHONPATH=. python3 scripts/import_data.py Präjudizen.csv
 
 echo "--- 1b. Rechtliche Textbausteine aktualisieren ---"
-export TENANT="${TENANT:-krg}"
 python3 scripts/split_docx_to_md.py ./TB-Strafrecht.docx ./skills/$TENANT/textbausteine-erstellen/resources/
+
 
 echo "--- 1c. Skills zur Anthropic API hochladen ---"
 python3 scripts/deploy_skills.py
