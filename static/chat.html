@@ -485,6 +485,10 @@
     .modal-btn.confirm:hover {
       background: #2c2c4e;
     }
+
+    #admin-link:hover {
+      background: rgba(255, 255, 255, 0.25) !important;
+    }
   </style>
 </head>
 
@@ -505,6 +509,13 @@
   <header>
     <div>Chat Researcher</div>
     <div style="display: flex; align-items: center; gap: 10px;">
+      <a id="admin-link" href="/admin/settings" style="display: inline-flex; color: #fff; text-decoration: none; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; transition: background 0.2s; align-items: center; gap: 6px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Admin
+      </a>
       <select id="model-select"
         style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 12px; outline: none; cursor: pointer;">
         <option value="claude-sonnet-4-6" selected>Anthropic Claude</option>
@@ -1037,6 +1048,12 @@ Wie kann ich Sie heute bei Ihrer Arbeit unterstützen?`;
       welcomeBubble.innerHTML = marked.parse(welcomeText);
       // Ensure the welcome message is in the history so the AI knows it sent it
       history.push({ role: "assistant", content: welcomeText });
+    }
+
+    // Set token on admin link if available
+    const adminLink = document.getElementById("admin-link");
+    if (adminLink && token) {
+      adminLink.href = `/admin/settings?token=${token}`;
     }
 
     loadWelcomeMessage();

@@ -17,7 +17,7 @@ load_dotenv()
 CLOUD_RUN_URL = os.getenv("CLOUD_RUN_URL", "")
 
 from app.database import init_db
-from app.chat import stream_chat
+from app.chat import stream_chat, SYSTEM_PROMPT, DEFAULT_WELCOME_MESSAGE
 from app.auth import (
     auth_backend,
     bearer_backend,
@@ -178,10 +178,10 @@ async def get_public_config(
         doc = await firestore_db.collection("settings").document(tenant).get()
         if doc.exists:
             data = doc.to_dict()
-            return {"welcome_message": data.get("welcome_message")}
+            return {"welcome_message": data.get("welcome_message") or DEFAULT_WELCOME_MESSAGE}
     except Exception as e:
         print(f"Error fetching welcome message from Firestore: {e}")
-    return {"welcome_message": None}
+    return {"welcome_message": DEFAULT_WELCOME_MESSAGE}
 
 
 @app.get("/api/admin/config", tags=["admin"])
@@ -194,10 +194,14 @@ async def get_admin_config(
     try:
         doc = await firestore_db.collection("settings").document(tenant).get()
         if doc.exists:
-            return doc.to_dict()
+            data = doc.to_dict()
+            return {
+                "system_prompt": data.get("system_prompt") or SYSTEM_PROMPT,
+                "welcome_message": data.get("welcome_message") or DEFAULT_WELCOME_MESSAGE
+            }
     except Exception as e:
         print(f"Error fetching config: {e}")
-    return {"system_prompt": "", "welcome_message": ""}
+    return {"system_prompt": SYSTEM_PROMPT, "welcome_message": DEFAULT_WELCOME_MESSAGE}
 
 
 class ConfigUpdateRequest(BaseModel):

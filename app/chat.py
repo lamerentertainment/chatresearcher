@@ -99,6 +99,19 @@ Vorgehen:
 8. Antworte immer auf Deutsch"""
 
 
+DEFAULT_WELCOME_MESSAGE = """Guten Tag! Ich bin Ihr juristischer KI-Assistent am Kriminalgericht. Ich bin mit speziellen **Skills** ausgestattet, um Ihnen die Arbeit zu erleichtern:
+
+- **Textbausteine erstellen:** Ich recherchiere selbständig die aktuelle Rechtsprechung und verfasse für Sie gerichtskonforme Textbausteine zur abstrakten Rechtslage (z.B. "Erstelle einen Textbaustein zu Art. 146 StGB").
+- **KRG Wissensmanagement:** Ich helfe Ihnen, Dokumente, Vorlagen oder Formulare auf der KRG-Wissensplattform zu finden und verlinke Sie direkt mit der korrekten SharePoint-Dateiablage (z.B. "Wo finde ich die Vorlage für ein Urteil?").
+
+Darüber hinaus unterstütze ich Sie bei der juristischen Recherche:
+- **OpenCaseLaw:** Suche in über 969'000 Schweizer Entscheiden inkl. Zitationsanalysen und Leitentscheiden.
+- **Lokale Datenbank:** Recherche in internen Präjudizen des Kriminalgerichts Luzern.
+- **Gesetze & Kommentare:** Abruf von Bundes- und Kantonsgesetzen sowie Zugriff auf wissenschaftliche Online-Kommentare und historische Materialien.
+
+Wie kann ich Sie heute bei Ihrer Arbeit unterstützen?"""
+
+
 _firestore_client = None
 
 def get_firestore_client():
@@ -119,10 +132,10 @@ async def load_tenant_config() -> tuple[str, str]:
             data = doc.to_dict()
             system_prompt = data.get("system_prompt")
             welcome_message = data.get("welcome_message")
-            return system_prompt or SYSTEM_PROMPT, welcome_message
+            return system_prompt or SYSTEM_PROMPT, welcome_message or DEFAULT_WELCOME_MESSAGE
     except Exception as e:
         print(f"Error loading tenant config from DB: {e}")
-    return SYSTEM_PROMPT, None
+    return SYSTEM_PROMPT, DEFAULT_WELCOME_MESSAGE
 
 
 async def load_tenant_skills() -> tuple[list[str], list[str], str]:

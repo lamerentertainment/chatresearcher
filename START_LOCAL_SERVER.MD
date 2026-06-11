@@ -22,18 +22,34 @@ uvicorn app.main:app --reload
 
 Der Server ist anschließend unter [http://127.0.0.1:8000](http://127.0.0.1:8000) erreichbar.
 
-## 4. (Optional) Firestore Emulator nutzen
-Um Abfragen lokal zu testen, ohne in die echte Cloud zu schreiben:
+## 4. Verbindung zu Firestore wählen
 
-1. Emulator in einem separaten Terminal starten:
+Du kannst den lokalen Server entweder mit der **aktiven (live) Cloud-Datenbank** verbinden oder den **lokalen Emulator** nutzen.
+
+### Option A: Mit der aktiven Firestore-Instanz (GCP Cloud) verbinden [Empfohlen]
+Der Server kontaktiert direkt die echte Cloud-Datenbank.
+1. Stelle sicher, dass die Umgebungsvariable `FIRESTORE_EMULATOR_HOST` **nicht** gesetzt ist. Falls sie in deinem Terminal aktiv ist, entferne sie mit:
+   ```bash
+   unset FIRESTORE_EMULATOR_HOST
+   ```
+2. Falls du noch nicht autorisiert bist, melde dich bei Google Cloud an, damit die Anwendung deine Standard-GCP-Zugangsdaten (Application Default Credentials) nutzen kann:
+   ```bash
+   gcloud auth application-default login
+   ```
+3. Starte den Server:
+   ```bash
+   uvicorn app.main:app --reload
+   ```
+
+### Option B: Lokalen Firestore Emulator nutzen
+Falls du Änderungen isoliert testen möchtest:
+1. Firestore Emulator starten:
    ```bash
    firebase emulators:start
    ```
-
-2. Im Terminal des Servers die Emulator-Variable setzen und Server starten:
+2. Setze die Emulator-Variable im Server-Terminal und starte den Server:
    ```bash
    export FIRESTORE_EMULATOR_HOST="localhost:8080"
    uvicorn app.main:app --reload
    ```
-
-Das Emulator-UI ist unter [http://localhost:4000](http://localhost:4000) erreichbar.
+   Das Emulator-UI ist anschliessend unter [http://localhost:4000](http://localhost:4000) erreichbar.
