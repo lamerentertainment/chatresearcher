@@ -106,7 +106,7 @@ def main() -> None:
                 ids[name] = existing_id
             else:
                 skill = client.beta.skills.create(
-                    display_title=name,
+                    display_title=f"{TENANT}-{name}",
                     files=files_from_dir(skill_dir),
                     betas=BETAS,
                 )
@@ -116,7 +116,7 @@ def main() -> None:
             # ID in skill_ids.json existiert nicht mehr bei Anthropic → neu anlegen
             print(f"    Skill-ID ungültig, erstelle neu...")
             skill = client.beta.skills.create(
-                display_title=name,
+                display_title=f"{TENANT}-{name}",
                 files=files_from_dir(skill_dir),
                 betas=BETAS,
             )

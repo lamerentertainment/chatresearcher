@@ -15,10 +15,19 @@ if [ -z "$ANTHROPIC_API_KEY" ] && [ -f .env ]; then
 fi
 
 echo "--- 1. Importiere Präjudizen ---"
-PYTHONPATH=. python3 scripts/import_data.py Präjudizen.csv
+rm -f data/praejudizen.db
+if [ -f "skills/$TENANT/Praejudizen.csv" ]; then
+  PYTHONPATH=. python3 scripts/import_data.py "skills/$TENANT/Praejudizen.csv"
+else
+  echo "    → Keine Präjudizen-CSV für Tenant $TENANT gefunden. Überspringe Import."
+fi
 
 echo "--- 1b. Rechtliche Textbausteine aktualisieren ---"
-python3 scripts/split_docx_to_md.py ./TB-Strafrecht.docx ./skills/$TENANT/textbausteine-erstellen/resources/
+if [ -f "skills/$TENANT/TB-Strafrecht.docx" ]; then
+  python3 scripts/split_docx_to_md.py "skills/$TENANT/TB-Strafrecht.docx" "./skills/$TENANT/textbausteine-erstellen/resources/"
+else
+  echo "    → Keine Textbausteine-Docx für Tenant $TENANT gefunden. Überspringe Aktualisierung."
+fi
 
 
 echo "--- 1c. Skills zur Anthropic API hochladen ---"
