@@ -33,6 +33,7 @@ skills/
 *   **[skills_config.py](file:///Users/jonasachermann/repos/chatresearcher/app/skills_config.py)**: Lädt die `skill_ids.json` dynamisch aus dem Pfad `skills/<TENANT>/skill_ids.json`.
 *   **[chat.py](file:///Users/jonasachermann/repos/chatresearcher/app/chat.py)**: Aggregiert lokale Skills über `_load_local_skills()` dynamisch aus dem Pfad `skills/<TENANT>/`.
 *   **[deploy_skills.py](file:///Users/jonasachermann/repos/chatresearcher/scripts/deploy_skills.py)**: Liest und aktualisiert die Skills für den übergebenen Mandanten in `skills/<TENANT>/`.
+*   **[main.py](file:///Users/jonasachermann/repos/chatresearcher/app/main.py)**: Loggt Anfragen unter Angabe des aktuellen `tenant` in Firestore und filtert die Admin-Anfragen-Historie entsprechend, um Datenvermischung zu vermeiden.
 *   **[deploy.sh](file:///Users/jonasachermann/repos/chatresearcher/deploy.sh)**: Automatisiert das Aufteilen der Dokumentenvorlagen für den aktiven Mandanten und benennt den Google Cloud Run Service dynamisch in `chat-researcher-<tenant>` um.
 *   **[upload-skills-to-hermes.sh](file:///Users/jonasachermann/repos/chatresearcher/upload-skills-to-hermes.sh)**: Erkennt die Skill-Unterordner unter `skills/<TENANT>/` automatisch und synchronisiert diese auf den Hermes-Gateway-Server.
 

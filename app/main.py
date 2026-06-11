@@ -130,9 +130,10 @@ async def list_requests(
         raise HTTPException(status_code=403, detail="Forbidden")
     
     if as_json:
-        # Fetch latest 100 requests from Firestore
+        tenant = os.getenv("TENANT", "krg")
+        # Fetch latest 100 requests from Firestore for the current tenant
         requests_ref = firestore_db.collection("requests")
-        query = requests_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(100)
+        query = requests_ref.where("tenant", "==", tenant).order_by("timestamp", direction=firestore.Query.DESCENDING).limit(100)
         docs = await query.get()
         
         requests = []
@@ -358,7 +359,9 @@ async def chat(
 
 async def save_request_to_firestore(user_id: int, user_email: str, query: str, response: str, tokens_input: int, tokens_output: int, cost_usd: float):
     try:
+        tenant = os.getenv("TENANT", "krg")
         await firestore_db.collection("requests").add({
+            "tenant": tenant,
             "user_id": user_id,
             "user_email": user_email,
             "query": query,
