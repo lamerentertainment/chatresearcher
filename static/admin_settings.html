@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Researcher - Admin Einstellungen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --white: #ffffff;
+            --hover-color: #f1f5f9;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --success-color: #22c55e;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: var(--hover-color);
+            color: var(--text-color);
+        }
+
+        .nav-link.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .card {
+            background-color: var(--white);
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #475569;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-family: inherit;
+            font-size: 0.875rem;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        .code-textarea {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger-hover);
+        }
+
+        .skills-list {
+            margin-top: 1.5rem;
+        }
+
+        .skill-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+            background-color: #f8fafc;
+        }
+
+        .skill-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .skill-name {
+            font-weight: 600;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-weight: 500;
+        }
+
+        .badge-active {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-inactive {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .skill-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Modal / Editor Overlay */
+        .editor-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .editor-content {
+            background-color: var(--white);
+            border-radius: 0.75rem;
+            width: 800px;
+            max-width: calc(100% - 40px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            animation: modalIn 0.2s ease-out;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        @keyframes modalIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .alert-success {
+            background-color: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Admin Dashboard - Einstellungen</h1>
+            <div class="nav-tabs">
+                <a href="/admin/requests" class="nav-link" id="navRequests">Anfragen Log</a>
+                <a href="/admin/settings" class="nav-link active" id="navSettings">Einstellungen</a>
+            </div>
+        </header>
+
+        <div id="alertBox" class="alert"></div>
+
+        <!-- Allgemeine Einstellungen Card -->
+        <div class="card">
+            <h2 class="card-title">Allgemeine Einstellungen</h2>
+            <form id="configForm" onsubmit="saveConfig(event)">
+                <div class="form-group">
+                    <label for="welcomeMessage">Willkommensnachricht (Markdown)</label>
+                    <textarea id="welcomeMessage" rows="6" placeholder="Guten Tag! Ich bin..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="systemPrompt">System-Prompt (LLM Instruktion)</label>
+                    <textarea id="systemPrompt" class="code-textarea" rows="16" placeholder="Du bist ein juristischer Rechercheassistent..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Konfiguration speichern</button>
+            </form>
+        </div>
+
+        <!-- Skills Card -->
+        <div class="card">
+            <h2 class="card-title">
+                <span>Textbasierte Skills (Firestore)</span>
+                <button onclick="openSkillEditor()" class="btn btn-primary">+ Neuer Skill</button>
+            </h2>
+            <div id="skillsList" class="skills-list">
+                <div style="text-align: center; color: #64748b; padding: 2rem;">Lade Skills...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skill Editor Modal -->
+    <div id="skillEditorModal" class="editor-modal">
+        <div class="editor-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Skill erstellen / bearbeiten</h3>
+                <button onclick="closeSkillEditor()" class="btn btn-secondary" style="padding: 0.25rem 0.5rem;">&times;</button>
+            </div>
+            <form id="skillForm" onsubmit="saveSkill(event)">
+                <input type="hidden" id="originalSkillId">
+                <div class="form-group">
+                    <label for="skillId">Skill ID (z.B. 'krg-wissen' - Kleinbuchstaben & Bindestrich)</label>
+                    <input type="text" id="skillId" required placeholder="mein-custom-skill">
+                </div>
+                <div class="form-group">
+                    <label for="skillName">Anzeigename (z.B. 'KRG Wissensmanagement')</label>
+                    <input type="text" id="skillName" required placeholder="Custom Wissensdatenbank">
+                </div>
+                <div class="form-group">
+                    <label for="skillContent">Skill Inhalt (Markdown / Anleitung / Textbausteine)</label>
+                    <textarea id="skillContent" class="code-textarea" rows="12" required placeholder="# Anleitung für den Skill..."></textarea>
+                </div>
+                <div class="form-group" style="display: flex; gap: 2rem;">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="skillActive" checked>
+                        Skill aktivieren
+                    </label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" onclick="closeSkillEditor()" class="btn btn-secondary">Abbrechen</button>
+                    <button type="button" id="deleteSkillBtn" onclick="deleteSkill()" class="btn btn-danger" style="display: none;">Löschen</button>
+                    <button type="submit" class="btn btn-primary">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Extract token
+        const urlParams = new URLSearchParams(window.location.search);
+        let token = urlParams.get('token');
+        if (!token) {
+            token = localStorage.getItem('chatresearcher_token');
+        }
+
+        // Apply token to nav tabs
+        if (token) {
+            document.getElementById('navRequests').href = `/admin/requests?token=${token}`;
+            document.getElementById('navSettings').href = `/admin/settings?token=${token}`;
+        }
+
+        // Show alerts
+        function showAlert(text, type = 'success') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = text;
+            alertBox.className = `alert alert-${type}`;
+            alertBox.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 5000);
+        }
+
+        // Fetch general configuration
+        async function fetchConfig() {
+            try {
+                const url = new URL('/api/admin/config', window.location.origin);
+                if (token) url.searchParams.set('token', token);
+
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Konfiguration konnte nicht geladen werden.');
+
+                const data = await response.json();
+                if (data) {
+                    document.getElementById('welcomeMessage').value = data.welcome_message || '';
+                    document.getElementById('systemPrompt').value = data.system_prompt || '';
+                }
+            } catch (err) {
+                showAlert(err.message, 'error');
+            }
+        }
+
+        // Save general configuration
+        async function saveConfig(e) {
+            e.preventDefault();
+            try {
+                const welcome_message = document.getElementById('welcomeMessage').value;
+                const system_prompt = document.getElementById('systemPrompt').value;
+
+                const url = new URL('/api/admin/config', window.location.origin);
+                if (token) url.searchParams.set('token', token);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ welcome_message, system_prompt })
+                });
+
+                if (!response.ok) throw new Error('Speichern fehlgeschlagen.');
+                showAlert('Konfiguration erfolgreich gespeichert.');
+            } catch (err) {
+                showAlert(err.message, 'error');
+            }
+        }
+
+        // Fetch skills list
+        async function fetchSkills() {
+            try {
+                const url = new URL('/api/admin/skills', window.location.origin);
+                if (token) url.searchParams.set('token', token);
+
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Skills konnten nicht geladen werden.');
+
+                const data = await response.json();
+                renderSkillsList(data);
+            } catch (err) {
+                document.getElementById('skillsList').innerHTML = `<div style="text-align: center; color: #ef4444; padding: 2rem;">${err.message}</div>`;
+            }
+        }
+
+        function renderSkillsList(skills) {
+            const listEl = document.getElementById('skillsList');
+            if (skills.length === 0) {
+                listEl.innerHTML = '<div style="text-align: center; color: #64748b; padding: 2rem;">Keine textbasierten Skills in Firestore gefunden. Standardmässig werden lokale Dateien geladen.</div>';
+                return;
+            }
+
+            listEl.innerHTML = skills.map(skill => `
+                <div class="skill-item">
+                    <div class="skill-info">
+                        <span class="skill-name">${escapeHtml(skill.name)}</span>
+                        <span class="badge ${skill.is_active ? 'badge-active' : 'badge-inactive'}">
+                            ${skill.is_active ? 'Aktiv' : 'Inaktiv'}
+                        </span>
+                        <span style="font-family: monospace; font-size: 0.8rem; color: #64748b;">(ID: ${escapeHtml(skill.id)})</span>
+                    </div>
+                    <div class="skill-actions">
+                        <button onclick="editSkill(${JSON.stringify(skill).replace(/"/g, '&quot;')})" class="btn btn-secondary">Bearbeiten</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Skill Editor functions
+        function openSkillEditor(skill = null) {
+            const modal = document.getElementById('skillEditorModal');
+            const form = document.getElementById('skillForm');
+            
+            form.reset();
+            document.getElementById('originalSkillId').value = '';
+            document.getElementById('skillId').disabled = false;
+            document.getElementById('deleteSkillBtn').style.display = 'none';
+            document.getElementById('modalTitle').textContent = 'Neuen Skill erstellen';
+
+            if (skill) {
+                document.getElementById('originalSkillId').value = skill.id;
+                document.getElementById('skillId').value = skill.id;
+                document.getElementById('skillId').disabled = true; // Cannot edit Firestore doc ID after creation
+                document.getElementById('skillName').value = skill.name;
+                document.getElementById('skillContent').value = skill.content;
+                document.getElementById('skillActive').checked = skill.is_active;
+                document.getElementById('deleteSkillBtn').style.display = 'block';
+                document.getElementById('modalTitle').textContent = 'Skill bearbeiten';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeSkillEditor() {
+            document.getElementById('skillEditorModal').style.display = 'none';
+        }
+
+        function editSkill(skill) {
+            openSkillEditor(skill);
+        }
+
+        // Save a skill
+        async function saveSkill(e) {
+            e.preventDefault();
+            try {
+                const id = document.getElementById('skillId').value.trim();
+                const name = document.getElementById('skillName').value.trim();
+                const content = document.getElementById('skillContent').value;
+                const is_active = document.getElementById('skillActive').checked;
+
+                const url = new URL('/api/admin/skills', window.location.origin);
+                if (token) url.searchParams.set('token', token);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id, name, content, is_active })
+                });
+
+                if (!response.ok) throw new Error('Skill konnte nicht gespeichert werden.');
+                
+                closeSkillEditor();
+                showAlert('Skill erfolgreich gespeichert.');
+                fetchSkills();
+            } catch (err) {
+                showAlert(err.message, 'error');
+            }
+        }
+
+        // Delete a skill
+        async function deleteSkill() {
+            const id = document.getElementById('originalSkillId').value;
+            if (!id || !confirm(`Möchten Sie den Skill "${id}" wirklich löschen?`)) return;
+
+            try {
+                const url = new URL(`/api/admin/skills/${id}`, window.location.origin);
+                if (token) url.searchParams.set('token', token);
+
+                const response = await fetch(url, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Skill konnte nicht gelöscht werden.');
+
+                closeSkillEditor();
+                showAlert('Skill erfolgreich gelöscht.');
+                fetchSkills();
+            } catch (err) {
+                showAlert(err.message, 'error');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load data on start
+        fetchConfig();
+        fetchSkills();
+    </script>
+</body>
+</html>

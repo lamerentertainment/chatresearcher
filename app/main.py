@@ -159,6 +159,129 @@ async def list_requests(
     
     return FileResponse("static/admin_requests.html")
 
+
+@app.get("/admin/settings", tags=["admin"])
+async def admin_settings_page(
+    user: User = Depends(current_active_user_simplified)
+):
+    if not user.is_superuser:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return FileResponse("static/admin_settings.html")
+
+
+@app.get("/api/config")
+async def get_public_config(
+    user: User = Depends(current_active_user_simplified)
+):
+    tenant = os.getenv("TENANT", "krg")
+    try:
+        doc = await firestore_db.collection("settings").document(tenant).get()
+        if doc.exists:
+            data = doc.to_dict()
+            return {"welcome_message": data.get("welcome_message")}
+    except Exception as e:
+        print(f"Error fetching welcome message from Firestore: {e}")
+    return {"welcome_message": None}
+
+
+@app.get("/api/admin/config", tags=["admin"])
+async def get_admin_config(
+    user: User = Depends(current_active_user_simplified)
+):
+    if not user.is_superuser:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    tenant = os.getenv("TENANT", "krg")
+    try:
+        doc = await firestore_db.collection("settings").document(tenant).get()
+        if doc.exists:
+            return doc.to_dict()
+    except Exception as e:
+        print(f"Error fetching config: {e}")
+    return {"system_prompt": "", "welcome_message": ""}
+
+
+class ConfigUpdateRequest(BaseModel):
+    system_prompt: str
+    welcome_message: str
+
+
+@app.post("/api/admin/config", tags=["admin"])
+async def save_admin_config(
+    data: ConfigUpdateRequest,
+    user: User = Depends(current_active_user_simplified)
+):
+    if not user.is_superuser:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    tenant = os.getenv("TENANT", "krg")
+    try:
+        await firestore_db.collection("settings").document(tenant).set({
+            "system_prompt": data.system_prompt,
+            "welcome_message": data.welcome_message
+        }, merge=True)
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class SkillSaveRequest(BaseModel):
+    id: str
+    name: str
+    content: str
+    is_active: bool
+
+
+@app.get("/api/admin/skills", tags=["admin"])
+async def list_admin_skills(
+    user: User = Depends(current_active_user_simplified)
+):
+    if not user.is_superuser:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    tenant = os.getenv("TENANT", "krg")
+    try:
+        docs = await firestore_db.collection("skills").where("tenant", "==", tenant).get()
+        return [doc.to_dict() for doc in docs]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/admin/skills", tags=["admin"])
+async def save_admin_skill(
+    skill: SkillSaveRequest,
+    user: User = Depends(current_active_user_simplified)
+):
+    if not user.is_superuser:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    tenant = os.getenv("TENANT", "krg")
+    try:
+        doc_id = f"{tenant}_{skill.id}"
+        await firestore_db.collection("skills").document(doc_id).set({
+            "id": skill.id,
+            "tenant": tenant,
+            "name": skill.name,
+            "content": skill.content,
+            "is_active": skill.is_active
+        })
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/admin/skills/{skill_id}", tags=["admin"])
+async def delete_admin_skill(
+    skill_id: str,
+    user: User = Depends(current_active_user_simplified)
+):
+    if not user.is_superuser:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    tenant = os.getenv("TENANT", "krg")
+    try:
+        doc_id = f"{tenant}_{skill_id}"
+        await firestore_db.collection("skills").document(doc_id).delete()
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 async def log_user_request(user_id: int, query: str, metrics_gen):
     pass # Replaced by save_request_to_db and wrapped_stream
 

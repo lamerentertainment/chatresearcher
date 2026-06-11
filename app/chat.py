@@ -18,6 +18,7 @@ from typing import AsyncGenerator, Optional
 import anthropic
 import httpx
 from dotenv import load_dotenv
+from google.cloud import firestore
 
 from app.skills_config import get_skill_ids, get_skill_names
 from app.tools import TOOL_DEFINITIONS, execute_tool
@@ -98,6 +99,70 @@ Vorgehen:
 8. Antworte immer auf Deutsch"""
 
 
+_firestore_client = None
+
+def get_firestore_client():
+    global _firestore_client
+    if _firestore_client is None:
+        _firestore_client = firestore.AsyncClient()
+    return _firestore_client
+
+async def load_tenant_config() -> tuple[str, str]:
+    """Loads system_prompt and welcome_message from Firestore for the current tenant.
+    Falls back to defaults if not found.
+    """
+    tenant = os.getenv("TENANT", "krg")
+    db = get_firestore_client()
+    try:
+        doc = await db.collection("settings").document(tenant).get()
+        if doc.exists:
+            data = doc.to_dict()
+            system_prompt = data.get("system_prompt")
+            welcome_message = data.get("welcome_message")
+            return system_prompt or SYSTEM_PROMPT, welcome_message
+    except Exception as e:
+        print(f"Error loading tenant config from DB: {e}")
+    return SYSTEM_PROMPT, None
+
+
+async def load_tenant_skills() -> tuple[list[str], list[str], str]:
+    """Loads active skills for the current tenant from Firestore.
+    Falls back to file-based skills if no database skills exist.
+    """
+    tenant = os.getenv("TENANT", "krg")
+    db = get_firestore_client()
+    try:
+        # Check if there are any skills in the database for this tenant
+        docs = await db.collection("skills").where("tenant", "==", tenant).get()
+        if docs:
+            # We have database skills! Iterate over active ones
+            skill_ids = []
+            skill_names = []
+            local_skills_list = []
+            
+            for doc in docs:
+                data = doc.to_dict()
+                if not data.get("is_active"):
+                    continue
+                skill_names.append(data.get("name"))
+                if data.get("claude_skill_id"):
+                    skill_ids.append(data["claude_skill_id"])
+                
+                # Combine skill content for local execution (Hermes)
+                local_skills_list.append(f"### Skill: {data.get('name')}\n{data.get('content')}")
+            
+            local_skills_prompt = ""
+            if local_skills_list:
+                local_skills_prompt = "\n\n--- LOCAL SKILLS ---\n\n" + "\n\n".join(local_skills_list)
+            
+            return skill_ids, skill_names, local_skills_prompt
+    except Exception as e:
+        print(f"Error loading tenant skills from DB: {e}")
+        
+    # Fallback to local files if no database skills exist
+    return get_skill_ids(), get_skill_names(), _load_local_skills()
+
+
 
 class HermesProvider:
     """Handles interaction with the local Hermes Agent SDK Gateway."""
@@ -126,11 +191,10 @@ class HermesProvider:
             })
         return openai_tools
 
-    async def chat_stream(self, messages: list, system_prompt: str):
+    async def chat_stream(self, messages: list, system_prompt: str, local_skills_prompt: str):
         """Streams from Hermes and handles thinking tags."""
         # Inject local skills into system prompt for Hermes
-        local_skills = _load_local_skills()
-        full_system = system_prompt + local_skills
+        full_system = system_prompt + local_skills_prompt
         
         payload = {
             "model": "hermes",
@@ -222,6 +286,9 @@ async def stream_chat(
     user_message: the new user input
     model: the model/provider ID to use
     """
+    system_prompt, _ = await load_tenant_config()
+    skill_ids, skill_names, local_skills_prompt = await load_tenant_skills()
+
     messages = history + [{"role": "user", "content": user_message}]
 
     # Yield an initial space or newline to "prime" the stream and flush buffers.
@@ -243,7 +310,7 @@ async def stream_chat(
                 assistant_text_in_turn = ""
                 tool_calls_in_turn = {} # index -> {name, input_json}
                 
-                async for event in provider.chat_stream(messages, SYSTEM_PROMPT):
+                async for event in provider.chat_stream(messages, system_prompt, local_skills_prompt):
                     if event["type"] == "text":
                         assistant_text_in_turn += event["content"]
                         yield _sse({"type": "text", "content": event["content"]})
@@ -325,8 +392,6 @@ async def stream_chat(
             total_cache_write_tokens = 0
             total_cache_read_tokens = 0
 
-            skill_ids = get_skill_ids()
-            skill_names = get_skill_names()
             code_execution_tool = {"type": "code_execution_20250825", "name": "code_execution"}
 
             turn_count = 0
@@ -339,7 +404,7 @@ async def stream_chat(
                     stream_cm = client.beta.messages.stream(
                         model=model,
                         max_tokens=8192,
-                        system=SYSTEM_PROMPT,
+                        system=system_prompt,
                         thinking={"type": "enabled", "budget_tokens": 4096},
                         tools=TOOL_DEFINITIONS + [code_execution_tool],
                         messages=messages,
@@ -351,7 +416,7 @@ async def stream_chat(
                     stream_cm = client.messages.stream(
                         model=model,
                         max_tokens=8192,
-                        system=SYSTEM_PROMPT,
+                        system=system_prompt,
                         tools=TOOL_DEFINITIONS,
                         messages=messages,
                         thinking={"type": "enabled", "budget_tokens": 4096},

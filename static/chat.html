@@ -1003,7 +1003,8 @@
     }
 
     // Initial Welcome Message
-    const welcomeText = `Guten Tag! Ich bin Ihr juristischer KI-Assistent am Kriminalgericht. Ich bin mit speziellen **Skills** ausgestattet, um Ihnen die Arbeit zu erleichtern:
+    async function loadWelcomeMessage() {
+      let welcomeText = `Guten Tag! Ich bin Ihr juristischer KI-Assistent am Kriminalgericht. Ich bin mit speziellen **Skills** ausgestattet, um Ihnen die Arbeit zu erleichtern:
 
 - **Textbausteine erstellen:** Ich recherchiere selbständig die aktuelle Rechtsprechung und verfasse für Sie gerichtskonforme Textbausteine zur abstrakten Rechtslage (z.B. "Erstelle einen Textbaustein zu Art. 146 StGB").
 - **KRG Wissensmanagement:** Ich helfe Ihnen, Dokumente, Vorlagen oder Formulare auf der KRG-Wissensplattform zu finden und verlinke Sie direkt mit der korrekten SharePoint-Dateiablage (z.B. "Wo finde ich die Vorlage für ein Urteil?").
@@ -1013,13 +1014,32 @@ Darüber hinaus unterstütze ich Sie bei der juristischen Recherche:
 - **Lokale Datenbank:** Recherche in internen Präjudizen des Kriminalgerichts Luzern.
 - **Gesetze & Kommentare:** Abruf von Bundes- und Kantonsgesetzen sowie Zugriff auf wissenschaftliche Online-Kommentare und historische Materialien.
 
-Wie kann ich Sie heute bei Ihrer Arbeit unterstützen?
-`;
+Wie kann ich Sie heute bei Ihrer Arbeit unterstützen?`;
 
-    const welcomeBubble = addMessage("assistant", "");
-    welcomeBubble.innerHTML = marked.parse(welcomeText);
-    // Ensure the welcome message is in the history so the AI knows it sent it
-    history.push({ role: "assistant", content: welcomeText });
+      try {
+        const url = new URL('/api/config', window.location.origin);
+        const headers = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        const response = await fetch(url, { headers });
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.welcome_message) {
+            welcomeText = data.welcome_message;
+          }
+        }
+      } catch (err) {
+        console.error("Fehler beim Laden der Willkommensnachricht:", err);
+      }
+
+      const welcomeBubble = addMessage("assistant", "");
+      welcomeBubble.innerHTML = marked.parse(welcomeText);
+      // Ensure the welcome message is in the history so the AI knows it sent it
+      history.push({ role: "assistant", content: welcomeText });
+    }
+
+    loadWelcomeMessage();
   </script>
 </body>
 

@@ -25,6 +25,32 @@
             padding: 2rem;
         }
 
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-right: 1rem;
+        }
+
+        .nav-link {
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .nav-link:hover {
+            background-color: var(--hover-color);
+            color: var(--text-color);
+        }
+
+        .nav-link.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -155,9 +181,15 @@
     <div class="container">
         <header>
             <h1>Admin Dashboard - Letzte Anfragen</h1>
-            <div class="controls">
-                <input type="text" id="searchInput" placeholder="Anfragen durchsuchen..." onkeyup="filterTable()">
-                <button onclick="fetchData()">Aktualisieren</button>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="nav-tabs">
+                    <a href="/admin/requests" class="nav-link active" id="navRequests">Anfragen Log</a>
+                    <a href="/admin/settings" class="nav-link" id="navSettings">Einstellungen</a>
+                </div>
+                <div class="controls">
+                    <input type="text" id="searchInput" placeholder="Anfragen durchsuchen..." onkeyup="filterTable()">
+                    <button onclick="fetchData()">Aktualisieren</button>
+                </div>
             </div>
         </header>
 
@@ -193,6 +225,13 @@
                 let token = urlParams.get('token');
                 if (!token) {
                     token = localStorage.getItem('chatresearcher_token');
+                }
+
+                if (token) {
+                    const navRequests = document.getElementById('navRequests');
+                    const navSettings = document.getElementById('navSettings');
+                    if (navRequests) navRequests.href = `/admin/requests?token=${token}`;
+                    if (navSettings) navSettings.href = `/admin/settings?token=${token}`;
                 }
 
                 const url = new URL('/admin/requests', window.location.origin);
