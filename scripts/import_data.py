@@ -4,8 +4,13 @@ Usage: PYTHONPATH=. python scripts/import_data.py <path-to-csv>
 """
 import csv
 import sys
+import os
 from dotenv import load_dotenv
 
+# Prioritize loading tenant-specific environment files if TENANT is specified
+tenant = os.getenv("TENANT")
+if tenant and os.path.exists(f".env.{tenant}"):
+    load_dotenv(f".env.{tenant}")
 load_dotenv()
 
 from app.database import init_db, db

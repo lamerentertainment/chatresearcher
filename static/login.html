@@ -103,8 +103,16 @@
         const data = await response.json();
         if (data.token) {
           localStorage.setItem('chatresearcher_token', data.token);
-          // Append token to URL so root page can authenticate without cookies
-          window.location.href = '/?token=' + data.token;
+          // Check for redirect param
+          const urlParams = new URLSearchParams(window.location.search);
+          const redirect = urlParams.get('redirect');
+          if (redirect) {
+            const separator = redirect.includes('?') ? '&' : '?';
+            window.location.href = redirect + separator + 'token=' + data.token;
+          } else {
+            // Append token to URL so root page can authenticate without cookies
+            window.location.href = '/?token=' + data.token;
+          }
         } else {
           throw new Error('No token received');
         }

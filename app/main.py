@@ -10,6 +10,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
+# Prioritize loading tenant-specific environment files if TENANT is specified
+tenant = os.getenv("TENANT")
+if tenant and os.path.exists(f".env.{tenant}"):
+    load_dotenv(f".env.{tenant}")
 load_dotenv()
 
 # URL of the Cloud Run service itself (set as env var in Cloud Run).
@@ -127,7 +131,9 @@ async def list_requests(
 ):
     print(f"DEBUG: list_requests accessed by user: {getattr(user, 'email', 'unknown')}, is_superuser: {getattr(user, 'is_superuser', False)}")
     if not user.is_superuser:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        if as_json:
+            raise HTTPException(status_code=403, detail="Forbidden")
+        return RedirectResponse(url="/login?redirect=/admin/requests")
     
     if as_json:
         tenant = os.getenv("TENANT", "krg")
@@ -166,7 +172,7 @@ async def admin_settings_page(
     user: User = Depends(current_active_user_simplified)
 ):
     if not user.is_superuser:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        return RedirectResponse(url="/login?redirect=/admin/settings")
     return FileResponse("static/admin_settings.html")
 
 
@@ -438,7 +444,7 @@ async def root(
             
         html_content = html_content.replace(
             "// Authentication Check",
-            f"// Authentication Check\n  window.BACKEND_URL = '{CLOUD_RUN_URL}';\n  window.HERMES_ENABLED = {hermes_enabled};\n  window.HERMES_LOCAL_ENABLED = {hermes_local_enabled};\n  window.HERMES_REMOTE_ENABLED = {hermes_remote_enabled};\n  const INJECTED_TOKEN = '{token_for_client}';\n  if (INJECTED_TOKEN) localStorage.setItem('chatresearcher_token', INJECTED_TOKEN);"
+            f"// Authentication Check\n  window.BACKEND_URL = window.location.hostname.endsWith('.run.app') ? window.location.origin : '{CLOUD_RUN_URL}';\n  window.HERMES_ENABLED = {hermes_enabled};\n  window.HERMES_LOCAL_ENABLED = {hermes_local_enabled};\n  window.HERMES_REMOTE_ENABLED = {hermes_remote_enabled};\n  const INJECTED_TOKEN = '{token_for_client}';\n  if (INJECTED_TOKEN) localStorage.setItem('chatresearcher_token', INJECTED_TOKEN);"
         )
         
         response = HTMLResponse(content=html_content)

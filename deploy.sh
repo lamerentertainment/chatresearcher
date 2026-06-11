@@ -3,15 +3,28 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
+# Wenn TENANT nicht in der Umgebung gesetzt ist, versuchen wir es aus .env zu lesen
+if [ -z "$TENANT" ] && [ -f .env ]; then
+  TENANT=$(grep '^TENANT=' .env | cut -d '=' -f2-)
+fi
 TENANT="${TENANT:-krg}"
 SERVICE="${SERVICE:-chat-researcher-$TENANT}"
 REGION="europe-west3"
 PROJECT_ID="gen-lang-client-0915148106"
 FIREBASE_DOMAINS="https://${PROJECT_ID}.web.app,https://${PROJECT_ID}.firebaseapp.com"
 
-# ANTHROPIC_API_KEY aus .env laden falls nicht bereits gesetzt
-if [ -z "$ANTHROPIC_API_KEY" ] && [ -f .env ]; then
-  export ANTHROPIC_API_KEY=$(grep '^ANTHROPIC_API_KEY=' .env | cut -d '=' -f2-)
+# Umgebungsvariablen aus .env.<tenant> oder .env laden falls nicht bereits gesetzt
+ENV_FILE=".env"
+if [ -f ".env.$TENANT" ]; then
+  ENV_FILE=".env.$TENANT"
+fi
+
+if [ -f "$ENV_FILE" ]; then
+  [ -z "$ANTHROPIC_API_KEY" ] && export ANTHROPIC_API_KEY=$(grep '^ANTHROPIC_API_KEY=' "$ENV_FILE" | cut -d '=' -f2-)
+  [ -z "$ADMIN_PASSWORD" ] && export ADMIN_PASSWORD=$(grep '^ADMIN_PASSWORD=' "$ENV_FILE" | cut -d '=' -f2-)
+  [ -z "$JWT_SECRET" ] && export JWT_SECRET=$(grep '^JWT_SECRET=' "$ENV_FILE" | cut -d '=' -f2-)
+  [ -z "$ALLOWED_FRAME_ANCESTORS" ] && export ALLOWED_FRAME_ANCESTORS=$(grep '^ALLOWED_FRAME_ANCESTORS=' "$ENV_FILE" | cut -d '=' -f2-)
+  [ -z "$SECURE_COOKIES" ] && export SECURE_COOKIES=$(grep '^SECURE_COOKIES=' "$ENV_FILE" | cut -d '=' -f2-)
 fi
 
 echo "--- 1. Importiere Präjudizen ---"
@@ -49,7 +62,7 @@ echo "    → $CLOUD_RUN_URL"
 # ^|^ als Trennzeichen, damit das Komma in CORS_ORIGINS nicht als Env-Var-Separator gilt
 gcloud run services update $SERVICE \
     --region $REGION \
-    --update-env-vars "^|^CLOUD_RUN_URL=${CLOUD_RUN_URL}|CORS_ORIGINS=${FIREBASE_DOMAINS}"
+    --update-env-vars "^|^CLOUD_RUN_URL=${CLOUD_RUN_URL}|CORS_ORIGINS=${FIREBASE_DOMAINS}|TENANT=${TENANT}|ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}|ADMIN_PASSWORD=${ADMIN_PASSWORD}|JWT_SECRET=${JWT_SECRET}|ALLOWED_FRAME_ANCESTORS=${ALLOWED_FRAME_ANCESTORS}|SECURE_COOKIES=${SECURE_COOKIES:-true}"
 
 echo "--- 4. Frontend Deployment (Firebase Hosting) ---"
 firebase deploy --only hosting
