@@ -27,9 +27,14 @@ def files_from_dir(skill_dir: Path) -> list:
     Pfade werden mit dem Verzeichnisnamen als Prefix versehen (z.B. 'mein-skill/SKILL.md'),
     wie von der API gefordert ('common root directory')."""
     prefix = skill_dir.name
-    valid_extensions = {".md", ".txt", ".json", ".csv"}
+    # .gz: gzip-komprimierter Volltext der Originalquellen (resources/quellen/)
+    valid_extensions = {".md", ".txt", ".json", ".csv", ".gz"}
     return [
-        (f"{prefix}/{f.relative_to(skill_dir)}", f.read_bytes(), "text/plain")
+        (
+            f"{prefix}/{f.relative_to(skill_dir)}",
+            f.read_bytes(),
+            "application/gzip" if f.suffix.lower() == ".gz" else "text/plain",
+        )
         for f in sorted(skill_dir.rglob("*"))
         if f.is_file() and f.suffix.lower() in valid_extensions
     ]
