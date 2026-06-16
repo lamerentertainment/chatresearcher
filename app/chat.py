@@ -164,41 +164,50 @@ async def load_tenant_config() -> tuple[str, str]:
 
 
 async def load_tenant_skills() -> tuple[list[str], list[str], str]:
-    """Loads active skills for the current tenant from Firestore.
-    Falls back to file-based skills if no database skills exist.
+    """Loads active skills for the current tenant.
+
+    Two sources are merged:
+      1. File-based skills deployed to the Anthropic Skills API (skill_ids.json,
+         written by scripts/deploy_skills.py). These are the actual *container*
+         skills the Claude path attaches and must always be included.
+      2. Firestore admin skills, which add content (used by the Hermes path) and
+         optionally a `claude_skill_id` for additional container skills.
+
+    Previously any Firestore skill caused the file-based skills to be ignored
+    entirely; since admin skills carry no `claude_skill_id`, that silently
+    detached the deployed skill (e.g. kg3abt-wissen) from the Claude container.
     """
     tenant = os.getenv("TENANT", "krg")
+
+    # Always start from the deployed file-based skills (Anthropic container IDs).
+    skill_ids = list(get_skill_ids())
+    skill_names = list(get_skill_names())
+    local_skills_prompt = _load_local_skills()
+
     db = get_firestore_client()
     try:
-        # Check if there are any skills in the database for this tenant
         docs = await db.collection("skills").where("tenant", "==", tenant).get()
-        if docs:
-            # We have database skills! Iterate over active ones
-            skill_ids = []
-            skill_names = []
-            local_skills_list = []
-            
-            for doc in docs:
-                data = doc.to_dict()
-                if not data.get("is_active"):
-                    continue
-                skill_names.append(data.get("name"))
-                if data.get("claude_skill_id"):
-                    skill_ids.append(data["claude_skill_id"])
-                
-                # Combine skill content for local execution (Hermes)
-                local_skills_list.append(f"### Skill: {data.get('name')}\n{data.get('content')}")
-            
-            local_skills_prompt = ""
-            if local_skills_list:
-                local_skills_prompt = "\n\n--- LOCAL SKILLS ---\n\n" + "\n\n".join(local_skills_list)
-            
-            return skill_ids, skill_names, local_skills_prompt
+        local_skills_list = []
+        for doc in docs:
+            data = doc.to_dict()
+            if not data.get("is_active"):
+                continue
+            name = data.get("name")
+            if name and name not in skill_names:
+                skill_names.append(name)
+            claude_skill_id = data.get("claude_skill_id")
+            if claude_skill_id and claude_skill_id not in skill_ids:
+                skill_ids.append(claude_skill_id)
+            # Combine skill content for local execution (Hermes)
+            local_skills_list.append(f"### Skill: {name}\n{data.get('content')}")
+
+        if local_skills_list:
+            fs_prompt = "\n\n--- LOCAL SKILLS ---\n\n" + "\n\n".join(local_skills_list)
+            local_skills_prompt = (local_skills_prompt or "") + fs_prompt
     except Exception as e:
         print(f"Error loading tenant skills from DB: {e}")
-        
-    # Fallback to local files if no database skills exist
-    return get_skill_ids(), get_skill_names(), _load_local_skills()
+
+    return skill_ids, skill_names, local_skills_prompt
 
 
 
