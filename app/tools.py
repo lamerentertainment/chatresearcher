@@ -9,6 +9,7 @@ Sources:
        get_commentary, search_commentaries, get_doctrine, analyze_legal_trend
 """
 import json
+import os
 import sqlite3
 from mcp import ClientSession
 from mcp.client.sse import sse_client
@@ -19,7 +20,15 @@ from app.database import DB_PATH
 # Tool definitions (JSON schema) passed to Claude
 # ---------------------------------------------------------------------------
 
-TOOL_DEFINITIONS = [
+# Tenants that have an internal Präjudizen SQLite DB (data/praejudizen.db).
+# Only these tenants get the local-DB tools. Other tenants (e.g. kg3abt)
+# keep their internal knowledge in a skill wiki, not in this DB, so exposing
+# list_regesten/get_praejudiz/search_local_cases there is wrong and misleads
+# the model into reporting "no internal documents".
+LOCAL_DB_TENANTS = {"krg"}
+
+# Local SQLite Präjudizen DB tools (KRG-specific)
+LOCAL_DB_TOOL_DEFINITIONS = [
     # ------------------------------------------------------------------
     # Local DB
     # ------------------------------------------------------------------
@@ -76,7 +85,10 @@ TOOL_DEFINITIONS = [
             "required": ["query"],
         },
     },
+]
 
+# OpenCaseLaw MCP tools (available to all tenants)
+OPENCASELAW_TOOL_DEFINITIONS = [
     # ------------------------------------------------------------------
     # OpenCaseLaw – Entscheide
     # ------------------------------------------------------------------
@@ -335,6 +347,23 @@ TOOL_DEFINITIONS = [
 ]
 
 
+def get_tool_definitions(tenant: str | None = None) -> list:
+    """Returns the tool definitions available to the given tenant.
+
+    Local SQLite Präjudizen DB tools are only exposed for tenants in
+    LOCAL_DB_TENANTS. All tenants get the OpenCaseLaw MCP tools.
+    """
+    if tenant is None:
+        tenant = os.getenv("TENANT", "krg")
+    if tenant in LOCAL_DB_TENANTS:
+        return LOCAL_DB_TOOL_DEFINITIONS + OPENCASELAW_TOOL_DEFINITIONS
+    return list(OPENCASELAW_TOOL_DEFINITIONS)
+
+
+# Tool definitions for the tenant this process serves (single-tenant per deploy).
+TOOL_DEFINITIONS = get_tool_definitions()
+
+
 # ---------------------------------------------------------------------------
 # Tool 1-3: Local DB search
 # ---------------------------------------------------------------------------
@@ -473,6 +502,12 @@ async def call_opencaselaw(tool_name: str, params: dict) -> str:
 # ---------------------------------------------------------------------------
 
 async def execute_tool(name: str, tool_input: dict) -> str:
+    LOCAL_DB_TOOLS = {"list_regesten", "get_praejudiz", "search_local_cases"}
+    if name in LOCAL_DB_TOOLS and os.getenv("TENANT", "krg") not in LOCAL_DB_TENANTS:
+        return (
+            "Für diesen Mandanten ist keine lokale Präjudizen-Datenbank verfügbar. "
+            "Interne Wissensdokumente werden über den entsprechenden Wissens-Skill abgerufen."
+        )
     if name == "list_regesten":
         return list_regesten()
     elif name == "get_praejudiz":
