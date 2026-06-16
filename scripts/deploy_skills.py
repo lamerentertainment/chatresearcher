@@ -8,9 +8,12 @@ Die resultierenden Skill-IDs werden in skill_ids.json gespeichert.
 Verwendung:
     python3 scripts/deploy_skills.py
 """
+import io
 import json
 import os
 import sys
+import unicodedata
+import zipfile
 from pathlib import Path
 
 import anthropic
@@ -22,22 +25,40 @@ BETAS = ["skills-2025-10-02"]
 
 
 
+# .gz: gzip-komprimierter Volltext der Originalquellen (resources/quellen/)
+VALID_EXTENSIONS = {".md", ".txt", ".json", ".csv", ".gz"}
+# Harte Grenzen der Anthropic Skills API (empirisch ermittelt):
+#   - Ein Multipart-Part (= das ZIP) darf max. 1024 KB gross sein.
+#   - Mehrere ZIPs sind verboten ("Skill cannot contain nested zip files"),
+#     also muss der GESAMTE Skill in dieses eine ZIP passen.
+#   - Einzeldateien als viele Parts brechen am Gateway ab (502) bzw. lehnen
+#     Umlaut-Dateinamen im Multipart-Header ab ("invalid characters").
+# Fazit: ein einzelnes ZIP <= 1024 KB ist der einzige tragfähige Upload-Weg.
+MAX_PART_BYTES = 1024 * 1024
+
+
 def files_from_dir(skill_dir: Path) -> list:
-    """Gibt alle Dateien eines Skill-Verzeichnisses als (name, bytes, mime)-Tuples zurück.
-    Pfade werden mit dem Verzeichnisnamen als Prefix versehen (z.B. 'mein-skill/SKILL.md'),
-    wie von der API gefordert ('common root directory')."""
+    """Packt das Skill-Verzeichnis in EIN ZIP-Archiv (die API entpackt es).
+
+    Pfade werden NFC-normalisiert: macOS speichert Dateinamen zerlegt (NFD),
+    die Skills-API lehnt diese kombinierenden Zeichen sonst als
+    'path with invalid characters' ab. NFC erhält die Originalnamen inkl. Umlaute.
+    Pfad-Prefix ist der Verzeichnisname ('common root directory')."""
     prefix = skill_dir.name
-    # .gz: gzip-komprimierter Volltext der Originalquellen (resources/quellen/)
-    valid_extensions = {".md", ".txt", ".json", ".csv", ".gz"}
-    return [
-        (
-            f"{prefix}/{f.relative_to(skill_dir)}",
-            f.read_bytes(),
-            "application/gzip" if f.suffix.lower() == ".gz" else "text/plain",
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for f in sorted(skill_dir.rglob("*")):
+            if f.is_file() and f.suffix.lower() in VALID_EXTENSIONS:
+                arc = unicodedata.normalize("NFC", f"{prefix}/{f.relative_to(skill_dir)}")
+                zf.write(f, arc)
+    data = buf.getvalue()
+    if len(data) > MAX_PART_BYTES:
+        sys.exit(
+            f"ERROR: Skill '{prefix}' ergibt ein ZIP von {len(data) / 1024:.0f} KB – "
+            f"die Anthropic Skills API erlaubt max. {MAX_PART_BYTES // 1024} KB pro Skill "
+            f"(ein einzelnes ZIP, keine geschachtelten ZIPs). Inhalt reduzieren."
         )
-        for f in sorted(skill_dir.rglob("*"))
-        if f.is_file() and f.suffix.lower() in valid_extensions
-    ]
+    return [(f"{prefix}.zip", data, "application/zip")]
 
 
 def load_skill_ids() -> dict:
