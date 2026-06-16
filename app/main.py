@@ -177,9 +177,7 @@ async def admin_settings_page(
 
 
 @app.get("/api/config")
-async def get_public_config(
-    user: User = Depends(current_active_user_simplified)
-):
+async def get_public_config():
     tenant = os.getenv("TENANT", "krg")
     try:
         doc = await firestore_db.collection("settings").document(tenant).get()

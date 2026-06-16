@@ -50,7 +50,7 @@ def _load_local_skills() -> str:
 
 load_dotenv()
 
-SYSTEM_PROMPT = """Du bist ein juristischer Rechercheassistent, spezialisiert auf Schweizer Strafrecht.
+KRG_SYSTEM_PROMPT = """Du bist ein juristischer Rechercheassistent, spezialisiert auf Schweizer Strafrecht.
 
 Dein Benutzer greift über die Wissensplattform des Kriminalgerichts Luzern auf dich zu. 
 
@@ -90,7 +90,7 @@ Opencaselaw entwickelt die verfügbaren Tools laufend weiter. Prüfe mcp.opencas
 
 Vorgehen:
 1. Suche zuerst mit `search_local_cases` nach internen Präjudizen
-2. Nutze `find_leading_cases` oder `get_doctrine` für die massgebliche Rechtsprechung
+2. Nutze `find_leading_cases` oder `get_doctrine` for die massgebliche Rechtsprechung
 3. Hole mit `get_decision` oder `get_case_brief` die Details zu wichtigen Entscheiden
 4. Ziehe bei Bedarf `get_law` für den Gesetzestext und `get_commentary` für die Doktrin bei
 5. Verwende `find_citations` oder `find_appeal_chain` für vertiefende Analyse
@@ -99,7 +99,7 @@ Vorgehen:
 8. Antworte immer auf Deutsch"""
 
 
-DEFAULT_WELCOME_MESSAGE = """Guten Tag! Ich bin Ihr juristischer KI-Assistent am Kriminalgericht. Ich bin mit speziellen **Skills** ausgestattet, um Ihnen die Arbeit zu erleichtern:
+KRG_DEFAULT_WELCOME_MESSAGE = """Guten Tag! Ich bin Ihr juristischer KI-Assistent am Kriminalgericht. Ich bin mit speziellen **Skills** ausgestattet, um Ihnen die Arbeit zu erleichtern:
 
 - **Textbausteine erstellen:** Ich recherchiere selbständig die aktuelle Rechtsprechung und verfasse für Sie gerichtskonforme Textbausteine zur abstrakten Rechtslage (z.B. "Erstelle einen Textbaustein zu Art. 146 StGB").
 - **KRG Wissensmanagement:** Ich helfe Ihnen, Dokumente, Vorlagen oder Formulare auf der KRG-Wissensplattform zu finden und verlinke Sie direkt mit der korrekten SharePoint-Dateiablage (z.B. "Wo finde ich die Vorlage für ein Urteil?").
@@ -110,6 +110,31 @@ Darüber hinaus unterstütze ich Sie bei der juristischen Recherche:
 - **Gesetze & Kommentare:** Abruf von Bundes- und Kantonsgesetzen sowie Zugriff auf wissenschaftliche Online-Kommentare und historische Materialien.
 
 Wie kann ich Sie heute bei Ihrer Arbeit unterstützen?"""
+
+
+def _get_default_system_prompt(tenant: str) -> str:
+    path = Path(__file__).parent.parent / "skills" / tenant / "default_systemprompt.md"
+    if path.exists():
+        try:
+            return path.read_text(encoding="utf-8").strip()
+        except Exception:
+            pass
+    return KRG_SYSTEM_PROMPT
+
+
+def _get_default_welcome_message(tenant: str) -> str:
+    path = Path(__file__).parent.parent / "skills" / tenant / "default_welcomemessage.md"
+    if path.exists():
+        try:
+            return path.read_text(encoding="utf-8").strip()
+        except Exception:
+            pass
+    return KRG_DEFAULT_WELCOME_MESSAGE
+
+
+TENANT = os.getenv("TENANT", "krg")
+SYSTEM_PROMPT = _get_default_system_prompt(TENANT)
+DEFAULT_WELCOME_MESSAGE = _get_default_welcome_message(TENANT)
 
 
 _firestore_client = None

@@ -1,0 +1,204 @@
+---
+title: Ingest-Status Literatur-PDFs
+created: 2026-06-12
+last_updated: 2026-06-12
+source_count: 0
+status: reviewed
+location: raw/Literatur/
+---
+
+Verfolgt, welche der Literatur-PDFs in `raw/Literatur/` bereits ins Wiki erschlossen wurden. `[x]` = erledigt, `[ ]` = offen. Diese Seite wird bei jedem Literatur-Ingest gepflegt. Gesamt: 191 PDFs, davon **191 erledigt (vollständig)** (Stand 2026-06-13). Hinweis: Mehrere Einträge sind Dubletten oder Randdokumente (administrativ/off-core), die als Quellen vermerkt, aber nicht separat als Seite erschlossen wurden. Siehe auch [[index]] und [[log]].
+
+## Status
+
+- [x] 2019_Rechtliche und praktische Aspekte Gerichtsgutachten.pdf (Dublette: Furrer SZS 2019 → gerichtsgutachten)
+- [x] 2021_Rechtsgutachten_Grundprobleme_Invaliditaetsbemessung_WESYM_2021.pdf
+- [x] Ackermann Thomas Abriss über den Sozialversicherungsprozess im Kanton Bern BVR 2015 363 ff.pdf
+- [x] Anspruch auf unentgeltliche.pdf
+- [x] Arbeits- und Erwerbsunfähigkeit im.pdf (Merz, ALV)
+- [x] Art. 52 AHVG - Praxis und Zweck der Arbeitgeberhaftung (1).pdf
+- [x] Aspekte rechtlicher Nähebeziehungen_Widmer Blum (002).pdf (Festschrift Aebi-Müller 2021; Randbezug SVR, nicht separat erschlossen)
+- [x] BGer-Urteil 1C_467_2017 Datenherausgabe.pdf
+- [x] BGer-Urteile sozialversicherungsrechtliches Verfahrensrecht_ZBJV 153_2017.pdf (= Gächter Verfahrensrecht ZBJV)
+- [x] BSV_Abklärungsprozess_IV.pdf (Forschungsbericht 4/15 → iv-abklaerungsverfahren)
+- [x] Bedeutung und Validität des psychopathologischen Befundes im Rahmen der versicherungsmedizinischen Begutachtung_szs 2024.pdf
+- [x] Beitrag_Stellungnahme_SAEZ 26 06 2014.pdf (SÄZ-Leserbrief zur IV-Stelle LU; Randdokument, nicht separat erschlossen)
+- [x] Berner_Bedeutung von Quartalsschätzungen für die Anpassung der Vergleichseinkommen an die Lohnentwicklung bei der Invaliditätsgradberechnung.pdf
+- [x] Bespr Entsch EMRK gemischte Methode Kieser AJP2016.pdf
+- [x] Besprechung BG Urteil 8C_582_2015 Abhängigkeitserkrankung szs 2016 96.pdf
+- [x] Braendle-Schreiber WzS 2014_35 Der Gueterichter im sozialgerichtlichen Verfahren.pdf
+- [x] Brückensymptome aus medizinischer und juristischer Sicht suva medical 2015.pdf
+- [x] Bucher_S_Rentenaufhebung_Herabsetzung_Luzerner_Beiträge.pdf
+- [x] CHSS_02-14_Psychische_Gesundheit _Beschäftigung.pdf
+- [x] Das Zwischenverdienstrecht der.pdf
+- [x] Der Weg zu einem invaliditätskonformeren Tabellenlohn_Riemer-Kafka_szs.pdf
+- [x] Der neuropsych. Gutachter im Verfahren der IV.pdf
+- [x] Die Koordination von Taggeldern der Arbeitslosenversicherung mit Taggeldern anderer Sozialversicherungszweige.pdf
+- [x] Die Prüfung des adäquaten Kausalzusammenhangs im UVG aus medizinischer Sicht.pdf
+- [x] Die berufsvorsorgerechtliche Bindungswirkung von IV-Entscheiden_ _Ruhekissen_ oder _Prokrustesbett__.pdf
+- [x] Die drohende Schlechterstellung im Sozialversicherungsprozess_Jaso2012.pdf
+- [x] Dormann Aufschiebende Wirkung SZS 2019 247.pdf
+- [x] Dummermuth EL Entwicklung und Tendenzen.pdf
+- [x] EL_Verzicht.pdf
+- [x] Eckpunkte der EL-Reform.pdf
+- [x] Egli_Slavik_Besprechung BGerUrt 8C_703_2018.pdf
+- [x] Eingliederungspflicht BGer Urt 8C_163_2018.pdf
+- [x] Erfasst ein Blick ins Hirn die Psyche.pdf (NZZ-Medienbeitrag)
+- [x] Erste UVG-Revision_ wichtigste Änderungen und mögliche Probleme bei der Umsetzung.pdf
+- [x] Eugster Wirtschaftlichkeitsprüfung.pdf
+- [x] Fleischanderl Aktuelle Urteile zu BGE 141 V 281 - SZS 2015 557-563.pdf
+- [x] Fleischanderl Schreckereignis SZS 2019 290.pdf
+- [x] Fleischanderl langjährig ausgerichtete Rente Swisslex_SZS 2012 S. 360.pdf
+- [x] Fleischanderl_6a_Urteile_SZS 448-454.pdf
+- [x] Fleischanderl_Verwertbarkeit_Observation_Rechtsprechung.pdf
+- [x] Gerichtsgutachten in der IV SZS 1_2019 S 3 ff.pdf
+- [x] Grundprobleme-der-Invaliditaetsbemessung-in-der-Invalidenversicherung-V1_02-20210427-digital.pdf (Digital-Fassung des WESYM-Rechtsgutachtens)
+- [x] Grundriss des Sozialversicherungsrechts...pdf (Lehrbuch-Referenz → sv-verfahren-besonderheiten)
+- [x] Gutachten Henningsen.pdf
+- [x] Gutachten in der Rechts- und Sozialberatung, Jusletter.pdf
+- [x] Gutglaubensschutz_Jusletter11775de.pdf
+- [x] Gächter Meier Einordnung BGE 141 V 281 HAVE 2015 435.pdf
+- [x] Gächter Meier Rechtspechung SZS 2017 289.pdf
+- [x] Gächter Meier Rechtsprechung SZS 2016 289 ff.pdf
+- [x] Gächter Neue Schmerzrechtsprechung.pdf
+- [x] Gächter Zusammenfassung BGE 137 V 2010.pdf (→ suissemedp-zufallsprinzip)
+- [x] Gächter wozu noch Erbrecht.pdf (Pflegefinanzierung/Erbrecht → el-pflegeversicherung)
+- [x] Gächter-Kradolfer_Schlussbestimmungen der IVG-Revision 6a, Anwendungsbereich und Problematik_HAVE_2011_S.311.pdf
+- [x] Gächter_Meier_Observation_ein Rechtsinstitut unter Beobachtung.pdf
+- [x] Gächter_Meier_Rechtswidrige Observation in der IV_Urteilsbesprechung 9C_806_2016.pdf
+- [x] Gächter_Verfahren_Rechtsprechung_2013 bis 2015_ZBJV 153_2017 324.pdf (Dublette von «BGer-Urteile … ZBJV 153_2017»)
+- [x] HAVE_3-2017_Schleifer_et_al_Depression___Therapieresistenz.pdf
+- [x] Hürzeler Biaggi_Rechtsprechung Sozialversicherungsrecht 2015_2016_I-III_ZBJV 153_2017 S. 841.pdf
+- [x] Hürzeler Biaggi_Rechtsprechung Sozialversicherungsrecht 2015_2016_IV_ZBJV 153_2017 S. 841.pdf
+- [x] Hürzeler_Neue gemischte Methode.pdf
+- [x] IBP_ICD-11_HANDOUT_September_2022_c.pdf
+- [x] IV Begutachtung Canela et al 2015.pdf
+- [x] IV Rundschreiben Nr 339 Gutachten.pdf
+- [x] IV-Rundschreiben_Nr._298.pdf
+- [x] IV-Rundschreiben_Nr._328.pdf
+- [x] IV-Rundschreiben_Nr._339.pdf
+- [x] IV-Rundschreiben_Nr._355.pdf
+- [x] IV-Rundschreiben_Nr._372 Gemischte Methode.pdf
+- [x] IV_Rundschreiben_Nr._334.pdf
+- [x] Info EKAS Jahresbericht.pdf (EKAS Arbeitssicherheit; off-core, Randdokument, nicht separat erschlossen)
+- [x] Invaliditätsbemessung_Vortrag_Mosimann_08.pdf
+- [x] J.P. Müller_Verfahrensgerechtigkeit SV_iusletter.pdf
+- [x] Jeger Hirnkappe.pdf (interne Korrespondenz, kurz)
+- [x] Jeger Probleme bei der Bewertung der invaliditätsfremden Faktoren in medizinischen Gutachten.pdf
+- [x] Jeger zu BGE 148 V 49.pdf
+- [x] Jeger, Probleme bei der Bewertung der «invaliditätsfremden Faktoren» in medizinischen Gutachten.pdf (zweite Fassung)
+- [x] Jeger_Richterzeitung_garbage-in-out_de.pdf
+- [x] Jeger_Unklare Beschwerdebilder 09 06 2015ppoint.pdf (Foliensatz zum Vortrag)
+- [x] Jeger_Unklare Beschwerdebilder Vortrag.pdf
+- [x] Jeger_neue_Schmerzrechtsprechung_iusletter_2015.pdf
+- [x] Junge_Psychischkranke.pdf
+- [x] Jusletter_-pflasterlipolitik--_9a86c38597_de.pdf
+- [x] Jusletter_arbeitsplatzbezogene_8bce81fad9_de.pdf
+- [x] Jusletter_art.-44-e-atsg---die_a4079d126f_de.pdf
+- [x] Jusletter_die-haftung-der-orga_3da2c802ed_de.pdf
+- [x] Jusletter_die-vergabe-der-poly_8a27b69b99_de.pdf
+- [x] Jusletter_durchzogene-bilanz-v_5709bd6fb3_de.pdf
+- [x] Jusletter_fixation-du-revenu-d_26d95b68ba_de.pdf
+- [x] Jusletter_hilflosenentschadigung und intensivpflegezuschlag.pdf
+- [x] Jusletter_invalidenkonforme-ta_73de2ce4cd_de.pdf
+- [x] Jusletter_observationen-im-soz_50ad496d7c_de.pdf
+- [x] Jusletter_pflicht-zur-einglied_c26bdf27cf_de.pdf
+- [x] Jusletter_privatdetektive,-auf_cfc41a45f1_de.pdf
+- [x] Jusletter_so-nicht--bundesgeri_caf66eb0cd_de (1).pdf (Dublette)
+- [x] Jusletter_so-nicht--bundesgeri_caf66eb0cd_de.pdf
+- [x] Jusletter_statusbestimmung-in-_beb7799515_de.pdf
+- [x] Kieser Ueli Beitrag der Leitlinien zu Qualitätssicherung und Verteilungsgerechtigkeit aus Sicht eines Rechtsvertreters SZS 16 516.pdf
+- [x] Kieser Unklare Beschwerdebilder Ein Blick zurück Swisslex_HAVE 2015 S. 428.pdf
+- [x] Kieser Unklare Beschwerdebilder Swisslex_HAVE 2015 S. 426.pdf
+- [x] Kieser_Eingliederung aus Rente, Entwicklung im Rahmen der 6. IV-Revision_HAVE_2011_S.304.pdf
+- [x] Kinder, Diabetes und Hilflosenentschädigung SZS 2020 75.pdf
+- [x] Knieschmerzen_ Unfall oder Erkrankung.pdf
+- [x] Knieschmerzen_Unfall oder Erkrankung.pdf (zweite Fassung)
+- [x] Kocher BGE 141 V 281 als Chance für die IV HAVE 2015 S. 442.pdf
+- [x] Konsistenzindikatoren ein Jahr nach.pdf
+- [x] Kradolfer_Rechtsprechung_EGMR_ZBl_1132012_S._53.pdf
+- [x] Kurmann_Einführung_Psychopathologie.pdf
+- [x] Kurzfassung_GA_J_P_Müller_Jusletter.pdf
+- [x] LANG_JaSo-2022_117-131 (1).pdf (JaSo 2022-Beitrag; Thema aus TOC nicht eindeutig – nicht separat erschlossen)
+- [x] Landolt_Die EL als Pflegeversicherung.pdf
+- [x] Landolt_Invaliditaetsbemessung bei Schlechtverdienenden.pdf
+- [x] Leichte traumatische Hirnverletzung suva medical 2017.pdf
+- [x] Leistungspflicht des Unfallversicherers für Pflegeleistungen bei einer Tetraplegie, Urteilsbesprechung 8C_626_2024, Pflegerecht 2026 39.pdf
+- [x] Leistungsvereinbarung BSV 10 04 2012.pdf (BSV-Verwaltungsvereinbarung; off-core, nicht separat erschlossen)
+- [x] Leitfaden HLSG 2014.pdf (Güterichter, DE)
+- [x] Leitlinien SAPPM_SGSS-def.pdf
+- [x] Liebrenz Michael Beitrag der Forschung für die Beurteilung von Leistungsfähigkeit und Prognose SZS 2016 498.pdf
+- [x] Marc-Hürzeler-Die-Verjährung-von-Forderungen-nach-Art-52-AHVG-HAVE-REAS-2-2025-S-107-ff.pdf
+- [x] Meier Michael E Ein Jahr neue Schmerzrechtsprechung Jusletter 11 6 2016.pdf
+- [x] Meier, Eingliederung aus Rente, SZS 2019 125 ff..pdf
+- [x] Meyer_Die psych_Begutachtung_FS_Walser.pdf
+- [x] Moser_IV-Revisionen_Einflüsse_BVG_Leistungspflicht.pdf
+- [x] Mosimann Grundsatzentscheid BGE 141 V 281 HAVE 2015 430.pdf
+- [x] Mosimann Hans_Jakob Beitrag der Leitlinien für die Rechtsprechung SZS 2016 507.pdf
+- [x] Mosimann_Manuela_Richter_als_Gutachter.pdf
+- [x] Mosimann_Problemzone Invalideneinkommen.pdf
+- [x] Mosimann_SZS_2014_185ff._Überwindbarkeit.pdf
+- [x] Müller.somatoformeSchmerzstörung.jusletter.pdf (Vollfassung; → kritik-schmerzrechtsprechung)
+- [x] Müller_M_Schleichwege.pdf (→ sv-verfahren-besonderheiten)
+- [x] NZZ die vermessene Psychiatrie.pdf (Medien → kritik-schmerzrechtsprechung)
+- [x] NZZ_Gefahr von Missbrauch wäre gross.pdf (Medien → kritik-schmerzrechtsprechung)
+- [x] Observation Nutzen und Grenzen Aebi Gaechter Aliotta Have 2011.pdf
+- [x] Pflicht zur Eingliederung.pdf (Dublette von «Eingliederungspflicht BGer Urt 8C_163_2018.pdf»)
+- [x] Portmann_PTBS_Päusbo.pdf
+- [x] Prof. Gächter Ausweitung der Indikatorenrechtsprechung Folien WB ASIM vom 21.11.2018.pdf
+- [x] Psychiatrische Begutachtung Medizin und Recht Liebrenz 2013.pdf
+- [x] Psychiatrische Gutachten Liebrenz 2014.pdf
+- [x] Qualitätsleitlinien für versicherungspsychiatrische Gutachten SGPP SZS 2016 435.pdf
+- [x] RAD_Evidenzbasierte_Versicherungspsychiatrie.pdf
+- [x] Rechtsprechung_ZBJV.pdf (Gächter, Verfahrensrecht 2012)
+- [x] Rechtsprechungsfundus_Beweisrecht_etc.pdf
+- [x] Rechtsverwirklichung durch Sozialversicherungsverfahren.pdf
+- [x] Reformatio in peius im Einsprache- und Beschwerdeverfahren_SZS.pdf
+- [x] Renker Jana Neue gemischte Methode.pdf
+- [x] Reporting+zu+SuisseMED@P+2013_DE_definitiv-all.pdf
+- [x] Riemer_Kafka Zur Ueberwindbarkeit der Ueberwindbarkeitsvermutung szs 2015.pdf
+- [x] SECO_D-Audit_Letter_2015-2.pdf (SECO-ALV-Aufsicht → alv-koordination)
+- [x] SZS 2017 658 Beweislastverteilung Unfallversicherung.pdf
+- [x] SZS Pärli über Uber Urteile.pdf
+- [x] Sager Rechtsprechung Depression SZS 2015 S 308.pdf
+- [x] Samuellson_8C_972_2012.pdf (→ ueberwindbarkeit-grundlagen)
+- [x] Schleifer Liebrenz Kieser Verwendung Observationsmaterial psychiatrische Begutachtungen SZS 2019 1.pdf
+- [x] Schär-Jentzsch-Cudré_Die IV-Revision 6a_CHSS 2011_S.244ff..pdf
+- [x] Schär_Übersicht über die Massnahmen der IV-Revision 6a un ihre finanziellen Auswirkungen_HAVE_2011_S.301.pdf
+- [x] Slavik Invalidenrentenaspruch bei depressiven Erkrankungen Jusletter.pdf
+- [x] So konkret wie möglich Berechnung des Invaliditätsgrades Meier Egli Filippo Gächter SZS 2021.pdf
+- [x] Stellungnahme BAG zu 8C_22 2019.pdf (Bundesbehörden-Stellungnahme zu UV-Fall; Randdokument, nicht separat erschlossen)
+- [x] Stiegliz ICD 11.pdf
+- [x] Stolkin_Sachverhalt_Recht_Jusletter_28_08_14.pdf
+- [x] Suchtleiden Abhängigkeitserkrankungen Abhandlung_szs16 12ff.pdf
+- [x] Summermatter BGE 9C_492 2014 Honni soit qui mal y pense HAVE 2015 S. 440.pdf
+- [x] Swisslex_AJP 2018 S. 624.pdf (Liebrenz et al., forensisch-psychiatrische Begutachtung → beweiswert-psychiatrischer-gutachten)
+- [x] Swisslex_HAVE 2016 S. 425.pdf (Caderas/Hürzeler, Observation → egmr-vukota-bojic)
+- [x] Swisslex_SZS 2014 S. 499 Henningsen Probleme.pdf
+- [x] Thoma_ICD-11_BROWSER_FV_c.pdf
+- [x] Traub Andreas Beizug medizinischer Sachverständiger die bereits einmal für eine Partei tätig geworden sind SZS 16 525.pdf
+- [x] Traub Revisionsgrund szs 2024.pdf
+- [x] Tschümperlin Justiz E-Dossier SJZ 114_2018 S. 313.pdf
+- [x] Tuor Vermeidung von Altersarmut mit EL.pdf
+- [x] Typische_Verfahren_KtLU.pdf
+- [x] Unfallversicherungsrechtliche.pdf (Landolt, UV-Pflegeentschädigung → uv-pflegeleistungen)
+- [x] VRG_Revision_ab_09_2015.pdf
+- [x] Verfahrensfreie_Verfügung_ZBl 110_2009 S. 593.pdf (Kurzeintrag, status: draft)
+- [x] Versicherter Verdienst in der UV.pdf
+- [x] Verwertbarkeit Restarbeitsfähigkeit Alter SZS 6_2018 S 630 ff.pdf
+- [x] Volz Zustellung sozialversicherungsrechtlicher Urkunden und Entscheide im Ausland SZS 2019 260.pdf
+- [x] Vorleistungspflicht der Arbeitslosenversicherung.pdf
+- [x] Vortrag Dumermuth EMRK und die Schweiz.pdf
+- [x] Weiss, Mitwirkungsrechte rund um Tonaufnahmen bei IV-Begutachtungen.pdf
+- [x] Yvonne Bollag Qualitätsleitlinien Beitrag zur Erfüllung des IVG-Zweckes SZS 2016 494.pdf
+- [x] Zumutbare Willensanspannung Dohrenbusch 2013.pdf
+- [x] Zur reformatio in peius im Einsprache- und im kantonalen Beschwerdeverfahren – Kommentar zum Urteil des Bundesgerichtes.pdf (Dublette von «Reformatio in peius im Einsprache- und Beschwerdeverfahren_SZS.pdf»)
+- [x] Zustellungen sozialversicherungsgerichtlicher Urkunden und Entscheide im Ausland.pdf (Volz, zweite Fassung)
+- [x] bollinger.psychiatrisches gutachten.pdf
+- [x] dCHSS_19-03_Schuepbach_bf.pdf (→ el-reform-2021)
+- [x] degenerative oder traumatische Läsionen Rotatorenmanschette.pdf
+- [x] glättli, das neue begutachtungsverfahren.pdf
+- [x] gächter siki sparen_um_jeden_preis IVG 6a.jusletter.pdf
+- [x] gächter.schlussbestimmungen.6a.pdf
+- [x] psych Gutachtensaufträge 2021.pdf
+- [x] Änderungen bei der gemischten Methode - Soziale Sicherheit CHSS.pdf
