@@ -137,10 +137,40 @@ async def list_requests(
     
     if as_json:
         tenant = os.getenv("TENANT", "krg")
-        # Fetch latest 100 requests from Firestore for the current tenant
         requests_ref = firestore_db.collection("requests")
-        query = requests_ref.where("tenant", "==", tenant).order_by("timestamp", direction=firestore.Query.DESCENDING).limit(100)
-        docs = await query.get()
+        
+        try:
+            # Try optimized query (requires composite index)
+            query = requests_ref.where("tenant", "==", tenant).order_by("timestamp", direction=firestore.Query.DESCENDING).limit(100)
+            docs = await query.get()
+        except Exception as e:
+            # Fallback for missing composite index or other Firestore query issues
+            print(f"WARNING: Firestore sorted query failed: {e}")
+            print("Attempting fallback: fetching documents and sorting in memory.")
+            
+            try:
+                fallback_query = requests_ref.where("tenant", "==", tenant)
+                all_docs = await fallback_query.get()
+                
+                from datetime import datetime, timezone
+                def get_timestamp(doc):
+                    data = doc.to_dict()
+                    ts = data.get("timestamp")
+                    if ts:
+                        if isinstance(ts, datetime):
+                            if ts.tzinfo is None:
+                                return ts.replace(tzinfo=timezone.utc)
+                            return ts
+                        try:
+                            return datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+                        except Exception:
+                            pass
+                    return datetime.min.replace(tzinfo=timezone.utc)
+                
+                docs = sorted(all_docs, key=get_timestamp, reverse=True)[:100]
+            except Exception as fallback_err:
+                print(f"ERROR: Fallback query also failed: {fallback_err}")
+                docs = []
         
         requests = []
         for doc in docs:
@@ -148,7 +178,10 @@ async def list_requests(
             # Convert timestamp to ISO string for JSON
             ts = data.get("timestamp")
             if ts:
-                ts_str = ts.isoformat()
+                if hasattr(ts, "isoformat"):
+                    ts_str = ts.isoformat()
+                else:
+                    ts_str = str(ts)
             else:
                 ts_str = None
                 
