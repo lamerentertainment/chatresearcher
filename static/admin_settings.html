@@ -324,53 +324,6 @@
                 <button type="submit" class="btn btn-primary">Konfiguration speichern</button>
             </form>
         </div>
-
-        <!-- Skills Card -->
-        <div class="card">
-            <h2 class="card-title">
-                <span>Textbasierte Skills (Firestore)</span>
-                <button onclick="openSkillEditor()" class="btn btn-primary">+ Neuer Skill</button>
-            </h2>
-            <div id="skillsList" class="skills-list">
-                <div style="text-align: center; color: #64748b; padding: 2rem;">Lade Skills...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Skill Editor Modal -->
-    <div id="skillEditorModal" class="editor-modal">
-        <div class="editor-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modalTitle">Skill erstellen / bearbeiten</h3>
-                <button onclick="closeSkillEditor()" class="btn btn-secondary" style="padding: 0.25rem 0.5rem;">&times;</button>
-            </div>
-            <form id="skillForm" onsubmit="saveSkill(event)">
-                <input type="hidden" id="originalSkillId">
-                <div class="form-group">
-                    <label for="skillId">Skill ID (z.B. 'krg-wissen' - Kleinbuchstaben & Bindestrich)</label>
-                    <input type="text" id="skillId" required placeholder="mein-custom-skill">
-                </div>
-                <div class="form-group">
-                    <label for="skillName">Anzeigename (z.B. 'KRG Wissensmanagement')</label>
-                    <input type="text" id="skillName" required placeholder="Custom Wissensdatenbank">
-                </div>
-                <div class="form-group">
-                    <label for="skillContent">Skill Inhalt (Markdown / Anleitung / Textbausteine)</label>
-                    <textarea id="skillContent" class="code-textarea" rows="12" required placeholder="# Anleitung für den Skill..."></textarea>
-                </div>
-                <div class="form-group" style="display: flex; gap: 2rem;">
-                    <label class="checkbox-container">
-                        <input type="checkbox" id="skillActive" checked>
-                        Skill aktivieren
-                    </label>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" onclick="closeSkillEditor()" class="btn btn-secondary">Abbrechen</button>
-                    <button type="button" id="deleteSkillBtn" onclick="deleteSkill()" class="btn btn-danger" style="display: none;">Löschen</button>
-                    <button type="submit" class="btn btn-primary">Speichern</button>
-                </div>
-            </form>
-        </div>
     </div>
 
     <script>
@@ -380,9 +333,6 @@
         if (!token) {
             token = localStorage.getItem('chatresearcher_token');
         }
-
-        // Global skills store to avoid JSON escaping issues in HTML attributes
-        let currentSkills = [];
 
         // Apply token to nav tabs
         if (token) {
@@ -446,144 +396,8 @@
             }
         }
 
-        // Fetch skills list
-        async function fetchSkills() {
-            try {
-                const url = new URL('/api/admin/skills', window.location.origin);
-                if (token) url.searchParams.set('token', token);
-
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Skills konnten nicht geladen werden.');
-
-                const data = await response.json();
-                renderSkillsList(data);
-            } catch (err) {
-                document.getElementById('skillsList').innerHTML = `<div style="text-align: center; color: #ef4444; padding: 2rem;">${err.message}</div>`;
-            }
-        }
-
-        function renderSkillsList(skills) {
-            currentSkills = skills;
-            const listEl = document.getElementById('skillsList');
-            if (skills.length === 0) {
-                listEl.innerHTML = '<div style="text-align: center; color: #64748b; padding: 2rem;">Keine textbasierten Skills in Firestore gefunden. Standardmässig werden lokale Dateien geladen.</div>';
-                return;
-            }
-
-            listEl.innerHTML = skills.map(skill => `
-                <div class="skill-item">
-                    <div class="skill-info">
-                        <span class="skill-name">${escapeHtml(skill.name)}</span>
-                        <span class="badge ${skill.is_active ? 'badge-active' : 'badge-inactive'}">
-                            ${skill.is_active ? 'Aktiv' : 'Inaktiv'}
-                        </span>
-                        <span style="font-family: monospace; font-size: 0.8rem; color: #64748b;">(ID: ${escapeHtml(skill.id)})</span>
-                    </div>
-                    <div class="skill-actions">
-                        <button onclick="editSkill('${escapeHtml(skill.id)}')" class="btn btn-secondary">Bearbeiten</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Skill Editor functions
-        function openSkillEditor(skill = null) {
-            const modal = document.getElementById('skillEditorModal');
-            const form = document.getElementById('skillForm');
-            
-            form.reset();
-            document.getElementById('originalSkillId').value = '';
-            document.getElementById('skillId').disabled = false;
-            document.getElementById('deleteSkillBtn').style.display = 'none';
-            document.getElementById('modalTitle').textContent = 'Neuen Skill erstellen';
-
-            if (skill) {
-                document.getElementById('originalSkillId').value = skill.id;
-                document.getElementById('skillId').value = skill.id;
-                document.getElementById('skillId').disabled = true; // Cannot edit Firestore doc ID after creation
-                document.getElementById('skillName').value = skill.name;
-                document.getElementById('skillContent').value = skill.content;
-                document.getElementById('skillActive').checked = skill.is_active;
-                document.getElementById('deleteSkillBtn').style.display = 'block';
-                document.getElementById('modalTitle').textContent = 'Skill bearbeiten';
-            }
-
-            modal.style.display = 'flex';
-        }
-
-        function closeSkillEditor() {
-            document.getElementById('skillEditorModal').style.display = 'none';
-        }
-
-        function editSkill(id) {
-            const skill = currentSkills.find(s => s.id === id);
-            if (skill) {
-                openSkillEditor(skill);
-            }
-        }
-
-        // Save a skill
-        async function saveSkill(e) {
-            e.preventDefault();
-            try {
-                const id = document.getElementById('skillId').value.trim();
-                const name = document.getElementById('skillName').value.trim();
-                const content = document.getElementById('skillContent').value;
-                const is_active = document.getElementById('skillActive').checked;
-
-                const url = new URL('/api/admin/skills', window.location.origin);
-                if (token) url.searchParams.set('token', token);
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ id, name, content, is_active })
-                });
-
-                if (!response.ok) throw new Error('Skill konnte nicht gespeichert werden.');
-                
-                closeSkillEditor();
-                showAlert('Skill erfolgreich gespeichert.');
-                fetchSkills();
-            } catch (err) {
-                showAlert(err.message, 'error');
-            }
-        }
-
-        // Delete a skill
-        async function deleteSkill() {
-            const id = document.getElementById('originalSkillId').value;
-            if (!id || !confirm(`Möchten Sie den Skill "${id}" wirklich löschen?`)) return;
-
-            try {
-                const url = new URL(`/api/admin/skills/${id}`, window.location.origin);
-                if (token) url.searchParams.set('token', token);
-
-                const response = await fetch(url, {
-                    method: 'DELETE'
-                });
-
-                if (!response.ok) throw new Error('Skill konnte nicht gelöscht werden.');
-
-                closeSkillEditor();
-                showAlert('Skill erfolgreich gelöscht.');
-                fetchSkills();
-            } catch (err) {
-                showAlert(err.message, 'error');
-            }
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
         // Load data on start
         fetchConfig();
-        fetchSkills();
     </script>
 </body>
 </html>
