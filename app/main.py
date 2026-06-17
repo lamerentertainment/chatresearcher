@@ -334,6 +334,9 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 async def startup():
     init_db()
     await create_db_and_tables()
+    # OpenCaseLaw-Tools live vom MCP-Server laden (Fallback: statische Defs)
+    from app.tools import load_opencaselaw_tools
+    await load_opencaselaw_tools()
 
 
 class ChatRequest(BaseModel):

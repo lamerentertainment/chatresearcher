@@ -2,11 +2,13 @@
 Tool implementations for Claude's agentic loop.
 
 Sources:
-  1. search_local_cases   – SQLite FTS5 search on local Präjudizen DB
-  2. OpenCaseLaw (MCP)    – 12 tools via https://mcp.opencaselaw.ch
-       search_decisions, find_leading_cases, get_decision, get_case_brief,
-       find_citations, find_appeal_chain, get_law, search_laws,
-       get_commentary, search_commentaries, get_doctrine, analyze_legal_trend
+  1. search_local_cases   – SQLite FTS5 search on local Präjudizen DB (KRG only)
+  2. OpenCaseLaw (MCP)    – via https://mcp.opencaselaw.ch
+
+The full OpenCaseLaw tool set is loaded dynamically from the MCP server at
+startup (see load_opencaselaw_tools), so new server-side tools become available
+without code changes. OPENCASELAW_TOOL_DEFINITIONS below is only a fallback used
+when the server is unreachable at boot.
 """
 import json
 import os
@@ -87,7 +89,10 @@ LOCAL_DB_TOOL_DEFINITIONS = [
     },
 ]
 
-# OpenCaseLaw MCP tools (available to all tenants)
+# OpenCaseLaw MCP tools (available to all tenants).
+# FALLBACK ONLY: at startup load_opencaselaw_tools() replaces this list in place
+# with the live tool set fetched from the MCP server. These static definitions
+# are used solely if that fetch fails (server unreachable at boot).
 OPENCASELAW_TOOL_DEFINITIONS = [
     # ------------------------------------------------------------------
     # OpenCaseLaw – Entscheide
@@ -495,6 +500,48 @@ async def call_opencaselaw(tool_name: str, params: dict) -> str:
 
     except Exception as e:
         return f"Fehler bei OpenCaseLaw ({tool_name}): {e}"
+
+
+def _mcp_tool_to_anthropic(tool) -> dict:
+    """Konvertiert ein MCP-Tool (name/description/inputSchema) ins Anthropic-Format."""
+    return {
+        "name": tool.name,
+        "description": tool.description or "",
+        "input_schema": getattr(tool, "inputSchema", None) or {"type": "object", "properties": {}},
+    }
+
+
+async def load_opencaselaw_tools() -> int:
+    """Lädt die aktuelle OpenCaseLaw-Tool-Liste vom MCP-Server und ersetzt die
+    statischen Fallback-Definitionen IN PLACE.
+
+    In-place-Mutation ist wichtig: Module wie app.chat importieren
+    TOOL_DEFINITIONS / OPENCASELAW_TOOLS per Wert; nur eine Mutation desselben
+    Objekts (nicht eine Neuzuweisung) wird dort sichtbar. Bei einem Fehler
+    (Server nicht erreichbar) bleibt die Fallback-Liste aktiv. Beim Start
+    aufrufen (siehe app.main:startup)."""
+    try:
+        async with sse_client(MCP_SERVER_URL) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                result = await session.list_tools()
+
+        defs = [_mcp_tool_to_anthropic(t) for t in result.tools]
+        names = {t.name for t in result.tools}
+
+        OPENCASELAW_TOOL_DEFINITIONS[:] = defs
+        OPENCASELAW_TOOLS.clear()
+        OPENCASELAW_TOOLS.update(names)
+        TOOL_DEFINITIONS[:] = get_tool_definitions()
+
+        print(f"OpenCaseLaw: {len(defs)} Tools dynamisch vom MCP-Server geladen.")
+        return len(defs)
+    except Exception as e:
+        print(
+            f"OpenCaseLaw: dynamisches Laden fehlgeschlagen ({e}); "
+            f"nutze {len(OPENCASELAW_TOOL_DEFINITIONS)} Fallback-Tools."
+        )
+        return 0
 
 
 # ---------------------------------------------------------------------------
