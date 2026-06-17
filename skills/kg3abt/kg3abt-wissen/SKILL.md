@@ -18,25 +18,29 @@ Um Anfragen zu beantworten, greifst du auf das lokale Wiki zurück, welches im V
 
 ## Volltext-Quellen (`./resources/quellen`)
 Zusätzlich zum Wiki liegt der verlustfrei extrahierte Volltext der Originaldokumente
-vor — gzip-komprimiert, in einer Struktur, die die SharePoint-Ablage spiegelt:
+vor — gzip-komprimiert, in einer Struktur, die die SharePoint-Ablage spiegelt
+(`Literatur/` 191 Fachaufsätze, `TBS/` 5 Textbausteine ATSG/IVG/UVG,
+`Statistische Grundlagen/` PDF + LSE-/Lohntabellen). Original `Literatur/<name>.pdf`
+⇒ `Literatur/<name>.pdf.txt.gz` (xlsx/xls ⇒ `*.csv.gz`).
 
+**Wichtig — die Quellen liegen als tar.gz-Bündel vor** (`resources/quellen/bundle-*.tar.gz`)
+und müssen **einmal pro Session entpackt** werden, bevor du suchst:
+
+```bash
+mkdir -p /tmp/quellen
+for b in ./resources/quellen/bundle-*.tar.gz; do tar xzf "$b" -C /tmp/quellen; done
 ```
-resources/quellen/
-├── Literatur/                  191 Fachaufsätze/Gutachten      (*.txt.gz)
-├── TBS/                          5 Textbausteine ATSG/IVG/UVG  (*.txt.gz)
-└── Statistische Grundlagen/    6 PDF + 25 LSE-/Lohntabellen
-                                 (PDF→*.txt.gz, xlsx/xls→*.csv.gz)
-```
 
-Original `Literatur/<name>.pdf` ⇒ hier `Literatur/<name>.pdf.txt.gz`. So beantwortest
-du inhaltliche Fragen direkt aus dem Quelltext und verlinkst zusätzlich SharePoint.
+Danach liegt unter `/tmp/quellen/` die volle Struktur (`Literatur/…`, `TBS/…`,
+`Statistische Grundlagen/…`) mit den **Originaldateinamen** (inkl. Umlaute) —
+genau so, wie sie auf SharePoint heissen.
 
-**Lesen/Durchsuchen** (gzip — nicht mit dem Read-Tool öffnen, sondern via Shell):
+**Lesen/Durchsuchen** (im entpackten Verzeichnis, via Shell — nicht mit dem Read-Tool):
 - Treffer-Datei finden:
-  `find ./resources/quellen -name '*.gz' -print0 | xargs -0 zgrep -li "SUCHBEGRIFF"`
-- Inhalt lesen: `gzip -dc "PFAD.txt.gz"`  (auf macOS `gzip -dc`, nicht `zcat`)
+  `find /tmp/quellen -name '*.gz' -print0 | xargs -0 zgrep -li "SUCHBEGRIFF"`
+- Inhalt lesen: `gzip -dc "/tmp/quellen/Literatur/<name>.txt.gz"`
 - Stelle mit Kontext: `gzip -dc "PFAD.txt.gz" | grep -n -C3 "BEGRIFF"`
-- Pfade/Dateinamen immer aus der `find`-Ausgabe übernehmen (macOS-Umlaut-Encoding).
+- Den Originalnamen (für die SharePoint-Verlinkung) immer aus der `find`-Ausgabe übernehmen.
 
 **Nicht enthalten — LGVE 3. Abteilung:** Die Entscheide der Abteilung sind über das
 **opencaselaw-MCP** abgedeckt (`search_decisions`, `get_decision`, `get_erwaegung` …).

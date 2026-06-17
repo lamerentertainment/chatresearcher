@@ -24,7 +24,7 @@ Tschümperlin (ehem. Generalsekretär des Bundesgerichts) beschreibt den Weg der
 
 ## Verwandte Seiten
 
-[[beweisrecht-svprozess]] · [[reformatio-in-peius]] · [[aufschiebende-wirkung]] · [[unentgeltliche-rechtsverbeiständung]] · [[rechtsprechungsuebersichten-svr]]
+[[beweisrecht-svprozess]] · [[reformatio-in-peius]] · [[aufschiebende-wirkung]] · [[unentgeltliche-rechtsverbeistaendung]] · [[rechtsprechungsuebersichten-svr]]
 
 ## Quellen (raw/Literatur/)
 

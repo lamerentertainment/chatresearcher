@@ -50,7 +50,7 @@ Volltext (opencaselaw): [LU_GERICHTE S 13 118 vom 15. Januar 2014](https://mcp.o
 
 > Erforderlichkeit der unentgeltlichen Verbeiständung im Verwaltungsverfahren. Mit der Überprüfung eines bislang berechtigterweise erfolgten und langdauernden Rentenbezugs im Rahmen einer 6a-Revision droht ein besonders starker Eingriff in die Rechtsposition, wodurch die Bestellung eines unentgeltlichen Rechtsbeistands grundsätzlich erforderlich wird.
 
-Verwandte Konzeptseiten: [[unentgeltliche-rechtsverbeiständung]] · [[schlussbestimmungen-6a]]
+Verwandte Konzeptseiten: [[unentgeltliche-rechtsverbeistaendung]] · [[schlussbestimmungen-6a]]
 Volltext (opencaselaw): [LU_GERICHTE 5V 14 185 vom 11. Juni 2014](https://mcp.opencaselaw.ch/entscheid/lu_gerichte_5V_14_185) [Quelle: opencaselaw lu_gerichte_5V_14_185]
 
 ### LGVE 2014 III Nr. 5 — Kurze Aktivitätsdauer: keine verwertbare Resterwerbsfähigkeit (S 13 240)

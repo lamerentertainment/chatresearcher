@@ -32,7 +32,7 @@ Die Unterscheidung ist für die [[dateistruktur|3. Abteilung des KG Luzern]] als
 
 ## Verwandte Seiten
 
-[[aufschiebende-wirkung]] · [[unentgeltliche-rechtsverbeiständung]] · [[verfahrensfreie-verfuegung]] · [[invalideneinkommen]]
+[[aufschiebende-wirkung]] · [[unentgeltliche-rechtsverbeistaendung]] · [[verfahrensfreie-verfuegung]] · [[invalideneinkommen]]
 
 ## Quellen (raw/Literatur/)
 

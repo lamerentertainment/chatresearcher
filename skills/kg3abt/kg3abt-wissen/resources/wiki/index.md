@@ -155,7 +155,7 @@ Wissensdatenbank über die Wissensressourcen der 3. Abteilung des Kantonsgericht
 |-------|-------------|
 | [[reformatio-in-peius]] | Schlechterstellung im Einsprache- vs. Beschwerdeverfahren (Art. 61 lit. d ATSG; BGer 8C_127/2016) |
 | [[aufschiebende-wirkung]] | Suspensiveffekt / einstweiliger Rechtsschutz im SVR-Verfahren |
-| [[unentgeltliche-rechtsverbeiständung]] | Art. 37 Abs. 4 / 52 Abs. 3 ATSG; strenger Massstab |
+| [[unentgeltliche-rechtsverbeistaendung]] | Art. 37 Abs. 4 / 52 Abs. 3 ATSG; strenger Massstab |
 | [[verfahrensfreie-verfuegung]] | Übersehenes VwVG-Konzept der Verfügung ohne förmliches Verfahren |
 | [[beweisrecht-svprozess]] | Untersuchungsgrundsatz, Beweisgrad, freie Beweiswürdigung (Fundus KG LU 3. Abt.) |
 | [[gueterichter-mediation]] | Güterichterverfahren / gerichtliche Mediation im Sozialprozess (DE, komparativ) |

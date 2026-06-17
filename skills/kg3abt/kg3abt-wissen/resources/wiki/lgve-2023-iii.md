@@ -61,7 +61,7 @@ Volltext (opencaselaw): [LU_GERICHTE 5V 22 368 vom 2. Mai 2023](https://mcp.open
 
 > Im Rahmen der Überentschädigungsberechnung sind die durch den Versicherungsfall verursachten Mehrkosten miteinzubeziehen. Unter Mehrkosten fallen auch die dem Versicherten entstandenen Anwaltskosten. Anrechenbar sind nur die notwendigen Aufwendungen. Diese müssen genügend substantiiert sein. Angemessenheit des Stundenansatzes (E. 8). Auf dem Anwaltshonorar kann ein Schadenszins berücksichtigt werden (E. 9).
 
-Verwandte Konzeptseiten: [[uvg-leistungen-revision]] · [[alv-koordination]] · [[unentgeltliche-rechtsverbeiständung]]
+Verwandte Konzeptseiten: [[uvg-leistungen-revision]] · [[alv-koordination]] · [[unentgeltliche-rechtsverbeistaendung]]
 Volltext (opencaselaw): [LU_GERICHTE 5V 21 454 vom 12. Dezember 2022](https://mcp.opencaselaw.ch/entscheid/lu_gerichte_5V_21_454) [Quelle: opencaselaw lu_gerichte_5V_21_454]
 
 ### LGVE 2023 III Nr. 6 — Spitex-Abrechnungsberechtigung in der IV (5V 22 239)

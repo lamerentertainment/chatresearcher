@@ -38,7 +38,7 @@ Die Quelle stammt von Johanna Dormann (Gerichtsschreiberin, II. sozialrechtliche
 
 ## Verwandte Seiten
 
-[[reformatio-in-peius]] · [[unentgeltliche-rechtsverbeiständung]]
+[[reformatio-in-peius]] · [[unentgeltliche-rechtsverbeistaendung]]
 
 ## Quellen (raw/Literatur/)
 

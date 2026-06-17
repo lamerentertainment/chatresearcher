@@ -126,7 +126,7 @@ Erschlossen wurde ein verfahrensrechtlicher Block: reformatio in peius (Einsprac
 
 Ergänzend: opencaselaw-MCP – Zitation BGer 8C_127/2016.
 
-**Erstellte Wiki-Seiten (3):** [[reformatio-in-peius]], [[aufschiebende-wirkung]], [[unentgeltliche-rechtsverbeiständung]]. Verlinkt mit [[index]].
+**Erstellte Wiki-Seiten (3):** [[reformatio-in-peius]], [[aufschiebende-wirkung]], [[unentgeltliche-rechtsverbeistaendung]]. Verlinkt mit [[index]].
 
 **Ingest-Status:** [[literatur-ingest-status]] aktualisiert → 34 / 191 PDFs erledigt.
 
@@ -681,7 +681,7 @@ Fortsetzung des rückwärtsgerichteten Ingests (`/loop`, Job 1422c663). **Erschl
 - Nr. 4 = 5V 14 185 (IV, unentgeltliche Verbeiständung im Verwaltungsverfahren bei 6a-Revision grundsätzlich erforderlich; Art. 37 Abs. 4 ATSG)
 - Nr. 5 = S 13 240 (IV, verbleibende Aktivitätsdauer < 2 Jahre → keine verwertbare Resterwerbsfähigkeit → ganze Rente)
 
-**Neue Seite (1):** [[lgve-2014-iii]] (`status: reviewed`). **Aktualisiert:** [[lgve-3-abteilung]] (Jahrgangsliste, nächster Schritt 2013), [[index]] (98 Seiten). **Backlinks ergänzt:** [[unentgeltliche-rechtsverbeiständung]] (Nr. 4 – direkter Treffer), [[verwertbarkeit-restarbeitsfaehigkeit-alter]] (Nr. 5 – direkter Treffer), [[alv-koordination]] (Nr. 1), [[kvg-wirtschaftlichkeitspruefung]] (Nr. 2/3, zugleich 2016 Nr. 1–3 nachgetragen).
+**Neue Seite (1):** [[lgve-2014-iii]] (`status: reviewed`). **Aktualisiert:** [[lgve-3-abteilung]] (Jahrgangsliste, nächster Schritt 2013), [[index]] (98 Seiten). **Backlinks ergänzt:** [[unentgeltliche-rechtsverbeistaendung]] (Nr. 4 – direkter Treffer), [[verwertbarkeit-restarbeitsfaehigkeit-alter]] (Nr. 5 – direkter Treffer), [[alv-koordination]] (Nr. 1), [[kvg-wirtschaftlichkeitspruefung]] (Nr. 2/3, zugleich 2016 Nr. 1–3 nachgetragen).
 
 **Nächster Schritt:** Jahrgang 2013 (Nr. 1–6) inhaltlich erschliessen.
 

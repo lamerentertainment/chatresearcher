@@ -11,9 +11,10 @@ Verwendung:
 import io
 import json
 import os
+import re
 import sys
+import tarfile
 import unicodedata
-import zipfile
 from pathlib import Path
 
 import anthropic
@@ -27,38 +28,95 @@ BETAS = ["skills-2025-10-02"]
 
 # .gz: gzip-komprimierter Volltext der Originalquellen (resources/quellen/)
 VALID_EXTENSIONS = {".md", ".txt", ".json", ".csv", ".gz"}
+
 # Harte Grenzen der Anthropic Skills API (empirisch ermittelt):
-#   - Ein Multipart-Part (= das ZIP) darf max. 1024 KB gross sein.
-#   - Mehrere ZIPs sind verboten ("Skill cannot contain nested zip files"),
-#     also muss der GESAMTE Skill in dieses eine ZIP passen.
-#   - Einzeldateien als viele Parts brechen am Gateway ab (502) bzw. lehnen
-#     Umlaut-Dateinamen im Multipart-Header ab ("invalid characters").
-# Fazit: ein einzelnes ZIP <= 1024 KB ist der einzige tragfähige Upload-Weg.
+#   - Max. 200 Dateien pro Skill ("Skill contains too many files").
+#   - Max. 30 MB pro Skill insgesamt.
+#   - Pfade nur aus [A-Za-z0-9._/-]; Leerzeichen/Umlaute/Klammern -> 400
+#     "path with invalid characters". (Ein ZIP würde beliebige Namen erlauben,
+#     ist aber pro Part gedeckelt und kann nicht geschachtelt/gestückelt
+#     werden -> für >1 MB unbrauchbar. Daher Einzeldatei-Upload.)
+#   - Pro Part nennt die API 1024 KB, real scheitern Parts ab ~900 KB
+#     sporadisch mit 400/502. Parts <= ~250 KB laden zuverlässig, auch wenn
+#     der Gesamt-Body mehrere MB beträgt (getestet: 140 Dateien / 4.9 MB).
+# Die Volltext-Quellen (resources/quellen/, ~227 Dateien mit Leerzeichen/Umlauten
+# im Namen) sprengen sowohl die Datei-Anzahl als auch den Zeichensatz. Sie werden
+# deshalb beim Deploy in viele kleine tar.gz-Bündel gepackt; der Skill entpackt
+# sie zur Laufzeit (siehe SKILL.md). Die Originalnamen bleiben IM tar erhalten
+# (für zgrep und SharePoint-Links).
+MAX_FILES = 200
 MAX_PART_BYTES = 1024 * 1024
+MAX_SKILL_BYTES = 30 * 1024 * 1024
+BUNDLE_TARGET_BYTES = 240 * 1024  # kleine Parts laden zuverlässig (s.o.)
+SAFE_PATH = re.compile(r"^[A-Za-z0-9._/-]+$")
+
+
+def _bundle_quellen(quellen_dir: Path, prefix: str) -> list:
+    """Packt resources/quellen/** in tar.gz-Bündel <1024 KB.
+    Rückgabe: Liste von (arc_name, bytes)-Tupeln. Pfade im tar sind relativ zu
+    quellen_dir, sodass das Entpacken die Struktur Literatur/TBS/... wiederherstellt."""
+    src = sorted(f for f in quellen_dir.rglob("*") if f.is_file() and f.suffix.lower() in VALID_EXTENSIONS)
+    bundles, batch, batch_bytes = [], [], 0
+
+    def flush(idx, files):
+        buf = io.BytesIO()
+        with tarfile.open(fileobj=buf, mode="w:gz") as tar:
+            for f in files:
+                tar.add(f, arcname=f.relative_to(quellen_dir).as_posix())
+        return (f"{prefix}/resources/quellen/bundle-{idx:02d}.tar.gz", buf.getvalue())
+
+    for f in src:
+        if batch and batch_bytes + f.stat().st_size > BUNDLE_TARGET_BYTES:
+            bundles.append(flush(len(bundles), batch))
+            batch, batch_bytes = [], 0
+        batch.append(f)
+        batch_bytes += f.stat().st_size
+    if batch:
+        bundles.append(flush(len(bundles), batch))
+
+    oversized = [(n, b) for n, b in bundles if len(b) > MAX_PART_BYTES]
+    if oversized:
+        sys.exit(
+            f"ERROR: tar.gz-Bündel überschreiten {MAX_PART_BYTES // 1024} KB: "
+            + ", ".join(f"{n} ({len(b)//1024} KB)" for n, b in oversized)
+        )
+    return bundles
 
 
 def files_from_dir(skill_dir: Path) -> list:
-    """Packt das Skill-Verzeichnis in EIN ZIP-Archiv (die API entpackt es).
+    """Baut die `files`-Liste für den Einzeldatei-Upload eines Skills.
 
-    Pfade werden NFC-normalisiert: macOS speichert Dateinamen zerlegt (NFD),
-    die Skills-API lehnt diese kombinierenden Zeichen sonst als
-    'path with invalid characters' ab. NFC erhält die Originalnamen inkl. Umlaute.
-    Pfad-Prefix ist der Verzeichnisname ('common root directory')."""
+    Alles ausser resources/quellen/ wird einzeln hochgeladen (Pfade NFC-normalisiert).
+    Die Quellen werden in tar.gz-Bündel gepackt (siehe _bundle_quellen)."""
     prefix = skill_dir.name
-    buf = io.BytesIO()
-    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
-        for f in sorted(skill_dir.rglob("*")):
-            if f.is_file() and f.suffix.lower() in VALID_EXTENSIONS:
-                arc = unicodedata.normalize("NFC", f"{prefix}/{f.relative_to(skill_dir)}")
-                zf.write(f, arc)
-    data = buf.getvalue()
-    if len(data) > MAX_PART_BYTES:
-        sys.exit(
-            f"ERROR: Skill '{prefix}' ergibt ein ZIP von {len(data) / 1024:.0f} KB – "
-            f"die Anthropic Skills API erlaubt max. {MAX_PART_BYTES // 1024} KB pro Skill "
-            f"(ein einzelnes ZIP, keine geschachtelten ZIPs). Inhalt reduzieren."
-        )
-    return [(f"{prefix}.zip", data, "application/zip")]
+    quellen_dir = skill_dir / "resources" / "quellen"
+
+    files = []
+    for f in sorted(skill_dir.rglob("*")):
+        if not (f.is_file() and f.suffix.lower() in VALID_EXTENSIONS):
+            continue
+        if quellen_dir in f.parents:
+            continue  # Quellen werden gebündelt
+        arc = unicodedata.normalize("NFC", f"{prefix}/{f.relative_to(skill_dir)}")
+        files.append((arc, f.read_bytes()))
+
+    if quellen_dir.is_dir():
+        files.extend(_bundle_quellen(quellen_dir, prefix))
+
+    # Grenzen prüfen, bevor die API mit kryptischen 400/502 antwortet
+    bad = [n for n, _ in files if not SAFE_PATH.match(n)]
+    if bad:
+        sys.exit(f"ERROR: Pfade mit ungültigen Zeichen: {bad[:5]}")
+    big = [(n, len(b)) for n, b in files if len(b) > MAX_PART_BYTES]
+    if big:
+        sys.exit(f"ERROR: Dateien > {MAX_PART_BYTES // 1024} KB: {big[:5]}")
+    if len(files) > MAX_FILES:
+        sys.exit(f"ERROR: {len(files)} Dateien > Maximum {MAX_FILES}.")
+    total = sum(len(b) for _, b in files)
+    if total > MAX_SKILL_BYTES:
+        sys.exit(f"ERROR: Skill {total / 1024 / 1024:.1f} MB > {MAX_SKILL_BYTES // 1024 // 1024} MB.")
+    print(f"    ({len(files)} Dateien, {total / 1024 / 1024:.2f} MB)")
+    return files
 
 
 def load_skill_ids() -> dict:
